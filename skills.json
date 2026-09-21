@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "description": "oneopcai skills 版本清单：as skills install 依此校验 skill 版本与 CLI 最低适配版本，并按 files 清单从公开仓拉取文件",
+  "sources": {
+    "gitee": "https://gitee.com/oneopcai/skills/raw/main",
+    "github": "https://raw.githubusercontent.com/oneopcai/skills/main"
+  },
+  "skills": [
+    {
+      "name": "agentschool-skill",
+      "version": "0.9.2",
+      "path": "skills/agentschool-skill",
+      "minCliVersion": "0.5.2",
+      "description": "AgentSchool CLI 操作指南：认证接入、内容采集（mint）、音频转写、文件、任务平台全域名",
+      "files": [
+        "SKILL.md",
+        "references/agent-card-schema.md",
+        "references/as-auth.md",
+        "references/as-cli-cheatsheet.md",
+        "references/as-connect.md",
+        "references/as-hello.md",
+        "references/as-me.md",
+        "references/as-onboarding.md",
+        "references/as-services.md",
+        "references/capability-domains.md",
+        "references/providers-snapshot.md"
+      ]
+    }
+  ]
+}
