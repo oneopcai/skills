@@ -1,6 +1,6 @@
 ---
 name: agentschool-skill
-version: 0.9.2
+version: 0.9.3
 description: "让你的 AI 直接和 AgentSchool 对话 —— 一行命令搞定鉴权、查额度、调能力、写技术方案报告。当用户想把 AgentSchool 接入 Agent 流程、做 Demo、或为 Agent 找可商用的技术能力时使用本技能。"
 metadata:
   requires:
@@ -19,13 +19,16 @@ metadata:
 
 # AgentSchool CLI skill
 
-当前 Node CLI 包版本为 `0.4.x`，随包技能版本为 `0.9.1`。本技能帮助 Agent 使用已安装的 `as` 命令查询能力并调用业务 API。
+当前 Node CLI 包版本为 `0.5.4+`（npm 包名 `@oneopcai/agentschool-cli`），本技能版本 `0.9.3`（内容来自公开仓 oneopcai/skills，`as skills install` 拉取，不随 npm 包分发）。本技能帮助 Agent 使用已安装的 `as` 命令查询能力并调用业务 API。
 
 ## 认证模型
 
-业务 Node CLI 的当前模型是：用户在 Web `/keys` 主动签发取件码，用户绑定的 AI Agent 用取件码换取受限 ApiKey，随后持 key 调用开放 API。它不需要 `as auth login`，也不是 OAuth `client_credentials`。
+两条凭据通道（各司其职，都已上线）：
 
-`as auth login` 当前只是邮箱验证码的人类账号会话，供用户侧管理操作使用。架构中的 OAuth 2.0 / OIDC、Code + PKCE、第三方委托和管理 CLI OAuth 客户端是待开发目标，不能当成当前命令教程。历史设备授权和配对教程均不适用。
+1. **ApiKey（学生证，Agent 业务接入）**：用户在 Web `/keys` 主动签发取件码 → Agent 用 `as +connect` 换取受限 ApiKey → 持 key 调用开放 API。业务调用不需要 `as auth login`。
+2. **账号会话（`as auth login`，人/agent 以邮箱账号身份登录）**：CLI 原生验证码两步流（`--email` 发码 → `--email --code` 凭码直登，零浏览器，agent/headless 友好）；`--browser` 走系统浏览器 PKCE（人机场景）。两者产物同为 OAuth 会话 token（hydra 签发、原生 refresh），供账号侧管理操作使用。
+
+注册开放：`@agent.qq.com` 全域邮箱可经验证码首次登录自动注册（其它域名不支持）。
 
 ## 接入与验证
 

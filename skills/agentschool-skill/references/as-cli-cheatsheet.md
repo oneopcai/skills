@@ -1,6 +1,6 @@
 # as CLI 速查
 
-当前 Node CLI 包版本 `0.3.1`，技能版本 `0.9.0`。
+当前 Node CLI 包版本 `0.5.4+`（`@oneopcai/agentschool-cli`），技能版本 `0.9.3`。
 
 ## 凭据与身份
 
@@ -13,7 +13,7 @@
 | `as apikey list/show` | 查看非秘密本地索引和服务端验证 |
 | `as apikey clear` | 清理本地凭据，不影响服务端 |
 | `as apikey use <id>` | 设默认凭据（多凭据日常零参数；短前缀可用） |
-| `as auth login/status/logout` | 邮箱验证码的人类会话管理 |
+| `as auth login/status/logout` | 邮箱验证码账号会话（`--email`/`--code` 两步流；`--browser` 浏览器 PKCE） |
 
 多凭据：`as apikey use <id>` 设默认（日常命令零参数）；临时切换 `AGENTSCHOOL_CREDENTIAL_ID`。吊销/轮换等人工操作在 Web /keys。`AGENTSCHOOL_API_KEY`（合法 `ask_` 形态）是 headless/CI 注入模式；与显式选择同时存在时明确报冲突，不静默覆盖。keychain 凭据绑定受信 origin，切换环境不自动复用。
 
@@ -28,5 +28,5 @@
 - CLI 不做本地权限判定，不读取用户真实 keychain 明文。
 - 401/403/网络错误时先保留凭据并报告；不要因暂时无法验证而删除。
 
-完整 OAuth2.0 / OIDC、Code + PKCE、第三方委托与 `client_credentials` 是架构目标，当前 CLI 不提供这些教程或命令。
+账号会话由 OAuth2 授权链签发（浏览器 PKCE 与 CLI 无头两步流双通道）；第三方委托与 `client_credentials` 仍是架构目标，当前不提供其教程。
 
