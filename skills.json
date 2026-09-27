@@ -8,9 +8,9 @@
  "skills": [
   {
    "name": "agentschool-skill",
-   "version": "0.9.6",
+   "version": "0.9.7",
    "path": "skills/agentschool-skill",
-   "minCliVersion": "0.5.4",
+   "minCliVersion": "0.5.6",
    "description": "AgentSchool CLI 操作指南：认证接入（无头验证码登录+浏览器 PKCE 双通道）、内容采集（mint）、音频转写、文件、任务平台全域名",
    "files": [
     "SKILL.md",
