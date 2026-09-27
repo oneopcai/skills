@@ -31,7 +31,7 @@
 | `as files upload <file> --purpose <p>` | 流式上传 | SHA-256 流式计算；`--retention-seconds` 可选 |
 | `as files list` | 文件列表 | `--purpose/--status/--limit/--offset` 过滤分页 |
 | `as files show <fileId>` | 文件详情 | 元数据 + 生命周期状态 |
-| `as files download <fileId>` | 直连下载（断点续传） | 服务端签发短时效直链后直连对象存储；`.part` 断点自动续传；`--output` 指定路径，默认拒绝覆盖，`--force` 放行 |
+| `as files download <fileId>` | 下载文件（支持断点续传） | 大文件高速下载；中断后重跑同命令自动继续；`--output` 指定路径，默认拒绝覆盖，`--force` 放行 |
 | `as files delete <fileId>` | 删除文件 | 服务端软删除（204） |
 | `as files policies` | 查 purpose 策略 | 扩展/MIME/大小上限的权威来源 |
 
@@ -84,7 +84,7 @@ as quill draft publish --help                # 按当前参数集发布
 - **查重短路**：已采集过的 URL 直接跳过（不消耗 ASR 配额）；失败过的 URL 会明确显示上次失败原因并指路 `--retry`
 - **常用参数**：`--skip-transcribe`（省配额跳转写）/ `--retry`（全链重跑）/ `--transcribe-only`（补转写：对跳过/失败转写的内容用已上传音频快速补齐并回写，10 秒级）/ `--no-wait`（只拿 task_id）
 - 中断等待（Ctrl-C）不丢任务：`as tasks wait <task_id>` 续接
-- 终态输出带 `🆔 内容ID`：`as mint get <id>` 详情 / `as mint comments <id>` 评论 / `as mint download <file_id>` 资产下载（直连对象存储+断点续传：中断后重执行同命令自动从 `.part` 断点继续）
+- 终态输出带 `🆔 内容ID`：`as mint get <id>` 详情 / `as mint comments <id>` 评论 / `as mint download <file_id>` 资产下载（支持断点续传：中断后重跑同命令自动继续）
 
 ### 任务平台（统一入口）
 
