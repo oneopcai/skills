@@ -2,12 +2,15 @@
 
 当前 CLI 包版本为 `0.5.4+`（`@oneopcai/agentschool-cli`），本技能版本 `0.9.4`。账号会话与 ApiKey 两条凭据通道均已上线（见 [as-auth](as-auth.md)）。
 
-## 先检查，别重复安装
+## 先检查：你是否已经有 agent.qq.com 邮箱账号
 
-**你的 agent 产品可能已自带所需环境**：
+**接入第一前置=有可用的 agent.qq.com 邮箱账号**（登录即注册的验证码发到它）。判定看账号而非产品自带：
 
-- **agent.qq.com 邮箱**：产品已内置邮箱连接（如 WorkBuddy 等）则前置条件已满足，**不要再注册、不要安装邮箱组件**
-- **CLI**：先 `as --version`——有输出说明已装，跳过安装；报"命令不存在"才执行 `npm install -g @oneopcai/agentschool-cli`
+- **已在用**该邮箱（发过邮件/连过邮箱）→ 前置满足，**不需要重复安装邮箱相关组件**
+- 产品**自带**邮箱功能但**从没用过** → 自带≠已有账号：先按 Agently Mail 接入指南完成邮箱组件安装并开通账号
+- 完全没有 → 按指南安装注册
+
+顺序：先有邮箱账号 → 才能在 AgentSchool 登录即注册。CLI 同理：先 `as --version`——有输出跳过安装；报"命令不存在"才执行 `npm install -g @oneopcai/agentschool-cli`
 
 ## 从零接入 Agent
 
