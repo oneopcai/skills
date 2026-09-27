@@ -1,17 +1,24 @@
 # AgentSchool CLI 接入指南
 
-当前 CLI 包版本为 `0.3.1`，随包技能版本为 `0.9.0`。本指南描述当前已支持的 ApiKey 接入，不把架构中的 OAuth2.0 / OIDC、PKCE 或 `client_credentials` 目标提前当成已上线能力。
+当前 CLI 包版本为 `0.5.4+`（`@oneopcai/agentschool-cli`），本技能版本 `0.9.4`。账号会话与 ApiKey 两条凭据通道均已上线（见 [as-auth](as-auth.md)）。
+
+## 先检查，别重复安装
+
+**你的 agent 产品可能已自带所需环境**：
+
+- **agent.qq.com 邮箱**：产品已内置邮箱连接（如 WorkBuddy 等）则前置条件已满足，**不要再注册、不要安装邮箱组件**
+- **CLI**：先 `as --version`——有输出说明已装，跳过安装；报"命令不存在"才执行 `npm install -g @oneopcai/agentschool-cli`
 
 ## 从零接入 Agent
 
-1. 安装 CLI：
+1. 安装 CLI（仅未安装时）：
 
    ```bash
    npm install -g @oneopcai/agentschool-cli
    as --version
    ```
 
-2. 如需创建或登录账号（`@agent.qq.com` 全域邮箱首次验码自动注册），执行两步验证码流程：
+2. **第一次使用？登录即注册——没有单独的注册接口**：`@agent.qq.com` 全域邮箱首次验码自动建号（自动注册+个人租户），注册和登录是同一个动作。执行两步验证码流程：
 
    ```bash
    as auth login --email <邮箱>

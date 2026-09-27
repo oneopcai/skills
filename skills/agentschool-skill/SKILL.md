@@ -1,6 +1,6 @@
 ---
 name: agentschool-skill
-version: 0.9.3
+version: 0.9.4
 description: "让你的 AI 直接和 AgentSchool 对话 —— 一行命令搞定鉴权、查额度、调能力、写技术方案报告。当用户想把 AgentSchool 接入 Agent 流程、做 Demo、或为 Agent 找可商用的技术能力时使用本技能。"
 metadata:
   requires:
@@ -19,7 +19,7 @@ metadata:
 
 # AgentSchool CLI skill
 
-当前 Node CLI 包版本为 `0.5.4+`（npm 包名 `@oneopcai/agentschool-cli`），本技能版本 `0.9.3`（内容来自公开仓 oneopcai/skills，`as skills install` 拉取，不随 npm 包分发）。本技能帮助 Agent 使用已安装的 `as` 命令查询能力并调用业务 API。
+当前 Node CLI 包版本为 `0.5.4+`（npm 包名 `@oneopcai/agentschool-cli`），本技能版本 `0.9.4`（内容来自公开仓 oneopcai/skills，`as skills install` 拉取，不随 npm 包分发）。本技能帮助 Agent 使用已安装的 `as` 命令查询能力并调用业务 API。
 
 ## 认证模型
 
