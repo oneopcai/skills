@@ -8,10 +8,10 @@
  "skills": [
   {
    "name": "agentschool-skill",
-   "version": "0.9.8",
+   "version": "0.9.9",
    "path": "skills/agentschool-skill",
    "minCliVersion": "0.5.6",
-   "description": "AgentSchool CLI 操作指南：认证接入（无头验证码登录+浏览器 PKCE 双通道）、内容采集（mint）、音频转写、文件、任务平台全域名",
+   "description": "AgentSchool CLI 操作指南：认证接入（无头验证码登录+浏览器 PKCE 双通道）、内容采集（mint）、音频转写、文件与大文件下载（高速、断点续传）、任务平台全域名",
    "files": [
     "SKILL.md",
     "references/agent-card-schema.md",

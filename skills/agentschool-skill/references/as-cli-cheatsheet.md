@@ -1,6 +1,6 @@
 # as CLI 速查
 
-当前 Node CLI 包版本 `0.5.4+`（`@oneopcai/agentschool-cli`），技能版本 `0.9.3`。
+当前 Node CLI 包版本 `0.5.6+`（`@oneopcai/agentschool-cli`），技能版本 `0.9.9`。
 
 ## 凭据与身份
 
