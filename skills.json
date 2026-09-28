@@ -60,6 +60,10 @@
   {
    "name": "WorkBuddy",
    "skillsDir": "~/.workbuddy/skills"
+  },
+  {
+   "name": "通用目录(多 Agent 共认)",
+   "skillsDir": "~/.agents/skills"
   }
  ]
 }
