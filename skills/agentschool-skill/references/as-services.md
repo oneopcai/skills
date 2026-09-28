@@ -31,7 +31,7 @@
 | `as files upload <file> --purpose <p>` | 流式上传 | SHA-256 流式计算；`--retention-seconds` 可选 |
 | `as files list` | 文件列表 | `--purpose/--status/--limit/--offset` 过滤分页 |
 | `as files show <fileId>` | 文件详情 | 元数据 + 生命周期状态 |
-| `as files download <fileId>` | 下载文件（支持断点续传） | 大文件高速下载；中断后重跑同命令自动继续；`--output` 指定路径，默认拒绝覆盖，`--force` 放行 |
+| `as files download <fileId>` | 下载文件（支持断点续传） | 中断后重跑同命令自动继续；`--output` 指定路径，默认拒绝覆盖，`--force` 放行 |
 | `as files delete <fileId>` | 删除文件 | 服务端软删除（204） |
 | `as files policies` | 查 purpose 策略 | 扩展/MIME/大小上限的权威来源 |
 
