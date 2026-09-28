@@ -4,6 +4,20 @@ Agent skills for the [AgentSchool](https://agentschool.me) platform — teach yo
 
 每个 skill 一个目录，位于 `skills/` 下。Agent 可通过 `npx skills` 或 AgentSchool CLI 安装。
 
+## 发布流程（维护者）
+
+改动 skill 内容后**不要手动 git commit**，统一走一键发布（自动重算完整性清单并双推）：
+
+```bash
+bash scripts/publish.sh "publish: agentschool-skill <说明>"
+```
+
+三层防线保证 skills.json 的 sha256 清单与文件永远一致（CLI 0.5.8+ 安装时按此校验）：
+1. **pre-push 本地钩子**（新 clone 跑一次 `bash scripts/install-hooks.sh`）——不一致直接拦 push
+2. **GitHub Actions**（`.github/workflows/verify-hashes.yml`）——push/PR 远端校验，状态可见
+3. **publish.sh 内置校验**——双推前最后跑一遍 verify
+
+
 ## Install
 
 **前置**：安装 CLI（Node.js ≥ 18）

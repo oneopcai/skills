@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# pre-push: skills.json 完整性清单必须与文件一致
+python scripts/verify-hashes.py || {
+  echo ""
+  echo "✗ push 被拦截：先跑 python scripts/gen-hashes.py 并把 skills.json 纳入本次提交"
+  exit 1
+}
