@@ -1,6 +1,6 @@
 # as CLI 速查
 
-当前 Node CLI 包版本 `0.5.6+`（`@oneopcai/agentschool-cli`），技能版本 `0.9.9`。
+当前 Node CLI 包版本 `0.5.6+`（`@oneopcai/agentschool-cli`），技能版本 `0.9.10`。
 
 ## 凭据与身份
 
@@ -28,5 +28,5 @@
 - CLI 不做本地权限判定，不读取用户真实 keychain 明文。
 - 401/403/网络错误时先保留凭据并报告；不要因暂时无法验证而删除。
 
-账号会话由 OAuth2 授权链签发（浏览器 PKCE 与 CLI 无头两步流双通道）；第三方委托与 `client_credentials` 仍是架构目标，当前不提供其教程。
+账号会话由 OAuth2 授权链签发（浏览器 PKCE 或 CLI 邮箱验证码两步流，两种登录方式）；第三方委托与 `client_credentials` 仍是架构目标，当前不提供其教程。
 
