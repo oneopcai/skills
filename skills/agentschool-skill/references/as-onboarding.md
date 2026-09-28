@@ -1,6 +1,6 @@
 # AgentSchool CLI 接入指南
 
-当前 CLI 包版本为 `0.5.4+`（`@oneopcai/agentschool-cli`），本技能版本 `0.9.4`。账号会话与 ApiKey 两条凭据通道均已上线（见 [as-auth](as-auth.md)）。
+账号会话与 ApiKey 两条凭据通道均已上线（见 [as-auth](as-auth.md)）。
 
 ## 先检查：你是否已经有 agent.qq.com 邮箱账号
 

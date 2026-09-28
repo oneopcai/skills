@@ -1,6 +1,6 @@
 # as services — 业务服务命令（tasks / mint / quill）
 
-> v0.9.0 新增。全部经网关受保护路由（ApiKey 走 `X-API-Key`；`Authorization: Bearer` 槽位属于会话 access token → PEP → PDP），
+> 全部经网关受保护路由（ApiKey 走 `X-API-Key`；`Authorization: Bearer` 槽位属于会话 access token → PEP → PDP），
 > 鉴权与租户上下文由服务端解析；CLI 不做授权判定、不缓存 allow/deny。
 > 自部署/本地栈：先 `export AGENTSCHOOL_API_BASE=http://localhost`（兼容 `AS_API_BASE`）。
 
@@ -40,7 +40,7 @@
 | 命令 | 用途 | 备注 |
 |---|---|---|
 | `as mint parse <url>` | 一键解析抖音视频 | 查重→提交→等待→输出标题/作者/转写；内部即任务链 |
-| 旧 mint 转写命令（弃用别名） | 弃用 | 已迁 `as audio transcribe`（别名 v0.5.0 移除，stderr 迁移通告） |
+| 旧 mint 转写命令（弃用别名） | 弃用 | 已迁 `as audio transcribe` |
 | `as mint sources` | 采集记录查询 | 子命令 `check` |
 
 ## as quill — 公众号创作助手
