@@ -18,7 +18,9 @@ def main():
             for name in files:
                 p = os.path.join(root, name)
                 rel = os.path.relpath(p, base).replace("\\", "/")
-                hashes[rel] = hashlib.sha256(open(p, "rb").read()).hexdigest()
+                hashes[rel] = hashlib.sha256(open(p, "rb").read().replace(b"
+", b"
+")).hexdigest()  # LF 规范化=远端 git raw 字节形态
         entry["sha256"] = dict(sorted(hashes.items()))
     with open(MANIFEST, "w", encoding="utf-8", newline="
 ") as f:
