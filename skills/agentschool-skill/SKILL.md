@@ -1,6 +1,6 @@
 ---
 name: agentschool-skill
-version: 0.9.12
+version: 0.9.13
 description: "让你的 AI 直接和 AgentSchool 对话 —— 一行命令搞定鉴权、查额度、调能力、写技术方案报告。当用户想把 AgentSchool 接入 Agent 流程、做 Demo、或为 Agent 找可商用的技术能力时使用本技能。"
 metadata:
   requires:
@@ -66,7 +66,7 @@ fetch_code 和完整 ApiKey 都是秘密，**没有 argv/env 入口**（进程�
 | `as audio transcribe` | 音频上传、转写与等待 |
 | `as files upload/list/show/download/delete/policies` | 文件平台 |
 | `as tasks list/show/wait/cancel/tree` | 跨业务任务平台 |
-| `as quill accounts/drafts/history/materials/covers` | 公众号工作台 |
+| `as wechatoa accounts/drafts/history/materials/covers` | 微信公众号工作台 |
 | `as skill list/install/update` | 技能分发 |
 | `as doctor` | 环境、网络和凭据自检 |
 
@@ -87,7 +87,7 @@ as mint parse https://v.douyin.com/xxxxx
 as audio transcribe audio.mp3 --wait
 as files upload video.mp4 --purpose mint.source_video
 as tasks list --service mint --limit 10
-as quill drafts list
+as --help  # 先核实 wechatoa 命令已注册后再调用
 ```
 
 ## 安全规则

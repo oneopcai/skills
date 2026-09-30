@@ -1,4 +1,4 @@
-# as services — 业务服务命令（tasks / mint / quill）
+# as services — 业务服务命令（tasks / mint / wechatoa）
 
 > 全部经网关受保护路由（ApiKey 走 `X-API-Key`；`Authorization: Bearer` 槽位属于会话 access token → PEP → PDP），
 > 鉴权与租户上下文由服务端解析；CLI 不做授权判定、不缓存 allow/deny。
@@ -43,17 +43,19 @@
 | 旧 mint 转写命令（弃用别名） | 弃用 | 已迁 `as audio transcribe` |
 | `as mint sources` | 采集记录查询 | 子命令 `check` |
 
-## as quill — 公众号创作助手
+## as wechatoa — 微信公众号服务
+
+`wechatoa` 是微信公众号官方 API 封装服务（账号、凭据、素材上传与草稿箱）。
 
 | 命令 | 用途 |
 |---|---|
-| `as quill accounts list` | 公众号配置列表 |
-| `as quill accounts verify <accountId>` | 公众号连通性自检 |
-| `as quill draft publish` | 草稿发布（参数多，先 `--help`） |
-| `as quill drafts list / get / delete` | 微信侧草稿箱 |
-| `as quill materials list / get / delete` | 素材库（图片/音频等已上传素材） |
-| `as quill history list / get` | 发布历史 |
-| `as quill covers` | 封面库（历史草稿用过的封面图） |
+| `as wechatoa accounts list` | 公众号配置列表 |
+| `as wechatoa accounts verify <accountId>` | 公众号连通性自检 |
+| `as wechatoa draft publish` | 草稿发布（参数多，先 `--help`） |
+| `as wechatoa drafts list / get / delete` | 微信侧草稿箱 |
+| `as wechatoa materials list / get / delete` | 素材库（图片/音频等已上传素材） |
+| `as wechatoa history list / get` | 发布历史 |
+| `as wechatoa covers` | 封面库（历史草稿用过的封面图） |
 
 ## 全链工作流（抖音 → 转写 → 公众号）
 
@@ -62,9 +64,9 @@ as mint parse https://v.douyin.com/xxxxx/   # → taskId + 标题/作者/转写
 as tasks tree <taskId>                       # 看父子编排（parse→media→asr 子任务）
 as audio transcribe ./interview.mp3 --wait   # 本地音频一行转写（上传+提交+等全文）
 as files list --purpose audio.transcription_input  # 查已上传的转写输入文件
-as quill accounts list                       # 列公众号配置（verify <accountId> 自检连通性）
-as quill materials list                      # 素材就位情况
-as quill draft publish --help                # 按当前参数集发布
+as wechatoa accounts list                     # 列公众号配置（verify <accountId> 自检连通性）
+as wechatoa materials list                    # 素材就位情况
+as wechatoa draft publish --help              # 按当前参数集发布
 ```
 
 ## 错误语义（网关链）
@@ -98,9 +100,9 @@ as tasks tree <task_id>                   # 子任务树（--max-depth 控层数
 
 task_type 命名 `<service>.<action>`（如 `mint.douyin_parse`）。
 
-### quill 发布规则
+### wechatoa 发布规则
 
-- **微信草稿必须带封面**：`--cover <图>` 新上传，或 `--thumb-media-id <已有封面ID>` 复用（从 `as quill history get <id>` 的 `thumb_media_id` 字段拿）
+- **微信草稿必须带封面**：`--cover <图>` 新上传，或 `--thumb-media-id <已有封面ID>` 复用（从 `as wechatoa history get <id>` 的 `thumb_media_id` 字段拿）
 - `--update-media-id <media_id>` 走更新模式（同 media_id 覆盖，不占新草稿位）
 - 微信 `errcode=40007`（invalid media_id）= 草稿缺封面
-- 连通性问题先 `as quill accounts verify <id>`（IP 白名单/密钥错误有可读提示）
+- 连通性问题先 `as wechatoa accounts verify <id>`（IP 白名单/密钥错误有可读提示）
