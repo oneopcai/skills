@@ -6,6 +6,7 @@ hash 计算与 gen-hashes.py 同款：LF 规范化（与远端 git raw 字节形
 """
 import hashlib
 import json
+import re
 import os
 import sys
 
@@ -24,6 +25,16 @@ def main() -> int:
         if not hashes:
             problems.append(f"{entry['name']}: 清单未提供 sha256（跑 scripts/gen-hashes.py）")
             continue
+        # N2（2026-09-30 用户反馈）：SKILL.md frontmatter version 必须与清单
+        # version 一致——否则用户/Agent 无法从文件本身判断版本。
+        skill_md = os.path.join(base, "SKILL.md")
+        if os.path.isfile(skill_md):
+            m = re.search(r"^version:\s*(\S+)", open(skill_md, encoding="utf-8").read(), re.M)
+            if not m or m.group(1) != entry.get("version"):
+                problems.append(
+                    f"{entry['name']}: SKILL.md frontmatter version "
+                    f"{m.group(1) if m else '缺失'} ≠ 清单 version {entry.get('version')}"
+                )
         for rel, expected in hashes.items():
             p = os.path.join(base, rel)
             if not os.path.isfile(p):

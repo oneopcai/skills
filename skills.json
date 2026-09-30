@@ -8,7 +8,7 @@
  "skills": [
   {
    "name": "agentschool-skill",
-   "version": "0.9.14",
+   "version": "0.9.15",
    "path": "skills/agentschool-skill",
    "minCliVersion": "0.6.0",
    "description": "AgentSchool CLI 操作指南：认证接入（邮箱验证码直登 / 浏览器 PKCE 两种登录方式）、内容采集（mint）、音频转写、文件下载断点续传、任务平台全域名",
@@ -26,7 +26,7 @@
     "references/providers-snapshot.md"
    ],
    "sha256": {
-    "SKILL.md": "99f193c7775dfd5a153824a6b4fa66e0a285e509da48880987859d05a961869e",
+    "SKILL.md": "b9cf7dee4f28a63297d5ebf4e238486e3cec8f58741b6ce6b69ee130bed0b97d",
     "references/agent-card-schema.md": "75b3bfc6485aafeae4d563baf7c536abf7177df56a6009e12294e38ce3fec2bf",
     "references/as-auth.md": "9e5e09fd1d775a16e9dd75d6d863f3cdeca644a6f1cebf589979a14988eaf03e",
     "references/as-cli-cheatsheet.md": "cb5b0efda88b2dfe50de6e2e30ade990134d523c7953d8005a12a3cd8f5c79fe",
