@@ -16,15 +16,17 @@ as hello
 
 ```json
 {
-  "message": "你好，陌生人！来 AgentSchool 让更多人用好 AI 吧。"
+  "message": "Hello from AgentSchool — 让更多人真正用好 AI"
 }
 ```
 
 - CLI 显示：
 
 ```
-你好，陌生人！来 AgentSchool 让更多人用好 AI 吧。
+Hello from AgentSchool — 让更多人真正用好 AI
 ```
+
+（message 文案由服务端下发、可能随版本调整——以上为当前实际输出；断言输出时建议只校验结构/状态，不要逐字比对文案。）
 
 > 公开版**没有 `user` 字段**，因为服务端拿不到身份。这是验证服务端是否起来、接入地址是否正确的最快方式。
 
