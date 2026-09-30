@@ -43,9 +43,11 @@ as hello --auth
 ```json
 {
   "email": "oneopcai@agent.qq.com",
-  "full_name": "一人AI突围"
+  "full_name": "张三"
 }
 ```
+
+（`full_name` 是用户真实姓名字段——用中性示例名；「一人AI突围」是产品品牌名，只出现在问候文案，不要当作人名填入。）
 
 - CLI 会显示：
 
