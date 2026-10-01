@@ -10,7 +10,7 @@
 - 产品**自带**邮箱功能但**从没用过** → 自带≠已有账号：先按 Agently Mail 接入指南完成邮箱组件安装并开通账号
 - 完全没有 → 按指南安装注册
 
-顺序：先有邮箱账号 → 才能在 AgentSchool 登录即注册。CLI 同理：先 `as --version`——有输出跳过安装；报"命令不存在"才执行 `npm install -g @oneopcai/agentschool-cli
+顺序：先有邮箱账号 → 才能在 AgentSchool 登录即注册。CLI 同理：先 `as --version`——有输出跳过安装；报"命令不存在"才执行 `npm install -g @oneopcai/agentschool-cli`
 
 > **版本通道**：`@latest`（默认，稳定版）与 `@next`（测试通道）。
 > - 稳定安装：`npm install -g @oneopcai/agentschool-cli`（= latest）

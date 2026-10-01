@@ -8,7 +8,7 @@
  "skills": [
   {
    "name": "agentschool-skill",
-   "version": "0.9.18",
+   "version": "0.9.19",
    "path": "skills/agentschool-skill",
    "minCliVersion": "0.6.0",
    "description": "AgentSchool CLI 操作指南：认证接入（邮箱验证码直登 / 浏览器 PKCE 两种登录方式）、内容采集（mint）、音频转写、文件下载断点续传、任务平台全域名",
@@ -26,17 +26,17 @@
     "references/providers-snapshot.md"
    ],
    "sha256": {
-    "SKILL.md": "2bf5589e95a8c0ef4f6a3705c7a253ecb1b724e1e971cce80bf104f04896c561",
+    "SKILL.md": "770aef3e4f8d2455ed750627e66a807a72797523c7dab4ea9caa74f69a9d4d9a",
     "references/agent-card-schema.md": "75b3bfc6485aafeae4d563baf7c536abf7177df56a6009e12294e38ce3fec2bf",
     "references/as-auth.md": "9e5e09fd1d775a16e9dd75d6d863f3cdeca644a6f1cebf589979a14988eaf03e",
-    "references/as-cli-cheatsheet.md": "cb5b0efda88b2dfe50de6e2e30ade990134d523c7953d8005a12a3cd8f5c79fe",
+    "references/as-cli-cheatsheet.md": "ad84cbbbbad17d9c799c979a5310182abd0cb2c205f24daa2fdf24dd6eb449d4",
     "references/as-connect.md": "4912004fd2144b4fcec61b5b2a8ad5a523dcf435f88b6758c7b77ad0b0a4aa17",
     "references/as-hello.md": "c2612b7137cd0a86aebf73e70c615236049febb4ed5872a9705ac08906b9e664",
     "references/as-me.md": "d747cb03b562837b3182e5b297f74e57eb0080881bcc0eac9dd19cf1b3433029",
-    "references/as-onboarding.md": "9e46f2a3cb1ff342fd6999b62ee405d10b0d6b8b2a065ab644652f21f39550bb",
-    "references/as-services.md": "61a769502ef3b271f7fef8f022f66dc7277e01a36fc7df4ca8351df4b6a85cbc",
+    "references/as-onboarding.md": "e52fa51155a7433882588a0fecf541020c6c7b74bde2e3c96ddd28eba7ca6b33",
+    "references/as-services.md": "1c228a5312b63939268962cd429e6f570ce9e86c5bdee62fe43ecef146f4996e",
     "references/capability-domains.md": "4394aae9ebf26d22185055e83ff09aac20648fabe6d6dbc13543d7bb282fa2a3",
-    "references/providers-snapshot.md": "258178620ed346617e6b513d31308384838230edc0ff499b4216cd66851a6d3e"
+    "references/providers-snapshot.md": "471350731c8ee0130bc30784933f1c02eecc257f97de6478a01320984b1afb4e"
    }
   }
  ],

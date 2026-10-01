@@ -18,7 +18,7 @@
 
 ## 认证头
 
-业务请求（ApiKey/学生证）固定使用 `X-API-Key: ask_...`。`Authorization: Bearer` 槽位只属于会话 access token，不要把 ApiKey 填入 Bearer，也不要把 ApiKey 当 OAuth access token 申请 refresh。不要附加已退役的 `X-Device-Id`。
+业务请求（ApiKey/学生证）固定使用 `X-Api-Key: ask_...`。`Authorization: Bearer` 槽位只属于会话 access token，不要把 ApiKey 填入 Bearer，也不要把 ApiKey 当 OAuth access token 申请 refresh。不要附加已退役的 `X-Device-Id`。
 
 ## 安全边界
 

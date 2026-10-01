@@ -10,7 +10,7 @@
 
 | 命令 | 用途 | 备注 |
 |---|---|---|
-| `as tasks list` | 任务列表（跨业务） | `--status` / `--kind` 过滤 |
+| `as tasks list` | 任务列表（跨业务） | `--service` / `--status` / `--type` 过滤 |
 | `as tasks show <taskId>` | 任务详情 | 含 `progress` / `stage` / `result` |
 | `as tasks wait <taskId>` | 等待终态（统一轮询） | `--timeout` 控上限；所有业务共用 |
 | `as tasks cancel <taskId>` | 取消任务 | 终态任务返回 409 |
