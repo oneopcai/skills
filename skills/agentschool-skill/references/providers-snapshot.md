@@ -36,5 +36,5 @@ agentschool 当前已收录的 provider / capability 快照。
 as capability providers                          # 全部服务商
 as capability search image                       # 按域搜索能力
 as capability search image --json                # 含 id/slug/provider 的结构化输出
-as capability show <id或slug>                    # 能力详情
+as capability show <UUID或slug>                  # 能力详情（slug 如 jimeng.text2image）
 ```

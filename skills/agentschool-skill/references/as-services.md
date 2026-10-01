@@ -1,6 +1,6 @@
 # as services — 业务服务命令（tasks / mint / wechatoa）
 
-> 全部经网关受保护路由（ApiKey 走 `X-API-Key`；`Authorization: Bearer` 槽位属于会话 access token → PEP → PDP），
+> 全部经网关受保护路由（ApiKey 走 `X-Api-Key`；`Authorization: Bearer` 槽位属于会话 access token → PEP → PDP），
 > 鉴权与租户上下文由服务端解析；CLI 不做授权判定、不缓存 allow/deny。
 > 自部署/本地栈：先 `export AGENTSCHOOL_API_BASE=http://localhost`（兼容 `AS_API_BASE`）。
 
