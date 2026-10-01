@@ -1,6 +1,6 @@
 ---
 name: agentschool-skill
-version: 0.9.20
+version: 0.9.21
 description: "让你的 AI 直接和 AgentSchool 对话 —— 一行命令搞定鉴权、查额度、调能力、写技术方案报告。当用户想把 AgentSchool 接入 Agent 流程、做 Demo、或为 Agent 找可商用的技术能力时使用本技能。"
 metadata:
   requires:
@@ -75,10 +75,10 @@ fetch_code 和完整 ApiKey 都是秘密，**没有 argv/env 入口**（进程�
 | `as files upload/list/show/download/delete/policies` | 文件平台 |
 | `as tasks list/show/wait/cancel/tree` | 跨业务任务平台 |
 | `as wechatoa accounts/drafts/history/materials/covers` | 微信公众号工作台 |
-| `as skill list/install/update` | 技能分发 |
+| `as skills list/install/update` | 技能分发 |
 | `as doctor` | 环境、网络和凭据自检 |
 
-公开命令以 `as --help` 实际注册为准：取件没有独立命令（是 `as +connect` 的内部流程），注册/登录也只有 `as auth login` 一个入口；身份命令唯一写法是 `as +me`。取件的自动化交付用 stdin 管道：`printf '<取件码>' | as +connect`。
+命令名即唯一写法（不保留历史别名，如 `as skills` 无 `as skill` 单数形式）；遇"未知命令"以 `as --help` 输出为准。公开命令以 `as --help` 实际注册为准：取件没有独立命令（是 `as +connect` 的内部流程），注册/登录也只有 `as auth login` 一个入口；身份命令唯一写法是 `as +me`。取件的自动化交付用 stdin 管道：`printf '<取件码>' | as +connect`。
 
 业务服务的详细参数、错误语义和能力域说明见 [as-services.md](references/as-services.md)、[capability-domains.md](references/capability-domains.md)、[providers-snapshot.md](references/providers-snapshot.md)。能力卡格式见 [agent-card-schema.md](references/agent-card-schema.md)。
 
