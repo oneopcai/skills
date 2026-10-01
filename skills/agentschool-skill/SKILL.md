@@ -1,6 +1,6 @@
 ---
 name: agentschool-skill
-version: 0.9.17
+version: 0.9.18
 description: "让你的 AI 直接和 AgentSchool 对话 —— 一行命令搞定鉴权、查额度、调能力、写技术方案报告。当用户想把 AgentSchool 接入 Agent 流程、做 Demo、或为 Agent 找可商用的技术能力时使用本技能。"
 metadata:
   requires:
@@ -63,6 +63,12 @@ fetch_code 和完整 ApiKey 都是秘密，**没有 argv/env 入口**（进程�
 | `as apikey list/show/use/clear` | 本地凭据索引、验证、设默认、清理（吊销/轮换=Web /keys） |
 | `as capability search/show/providers/export` | 查询、查看、导出能力卡 |
 | `as mint parse` | 抖音解析流水线 |
+| `as mint list / get / search` | 已采集内容列表 / 详情（含转写+资产）/ 全平台搜索 |
+| `as mint authors <author_id>` | 作者详情 + 粉丝快照（短前缀可解析） |
+| `as mint comments <content_id>` | 评论列表（未采集时提示补采） |
+| `as mint douyin author posts <sec_uid或author_id>` | 作者作品列表（parse_url 可直接采集） |
+| `as mint douyin cookie set / status / clear` | 抖音登录态管理（搜索/评论全量/深翻页的前置） |
+| `as mint collect comments / author <id>` | 评论全量 / 粉丝快照补采 |
 | `as audio transcribe` | 音频上传、转写与等待 |
 | `as files upload/list/show/download/delete/policies` | 文件平台 |
 | `as tasks list/show/wait/cancel/tree` | 跨业务任务平台 |

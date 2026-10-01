@@ -15,6 +15,7 @@
 > **版本通道**：`@latest`（默认，稳定版）与 `@next`（测试通道）。
 > - 稳定安装：`npm install -g @oneopcai/agentschool-cli`（= latest）
 > - 参与测试：`npm install -g @oneopcai/agentschool-cli@next`（预发布版，验证通过后晋升 latest）
+>   - 刚发布后 1–2 分钟内 npm 缓存可能报 ETARGET——加 `--prefer-online` 规避
 > - 版本号规则：semver `主.次.修订`；预发布版带 `-beta.N` 后缀（如 `0.7.0-beta.1`）`
 
 ## 从零接入 Agent
