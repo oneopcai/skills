@@ -16,6 +16,17 @@
 
 多凭据：`as apikey use <id>` 设默认（日常命令零参数）；临时切换 `AGENTSCHOOL_CREDENTIAL_ID`。吊销/轮换等人工操作在 Web /keys。`AGENTSCHOOL_API_KEY`（合法 `ask_` 形态）是 headless/CI 注入模式；与显式选择同时存在时明确报冲突，不静默覆盖。keychain 凭据绑定受信 origin，切换环境不自动复用。
 
+## 公众号图文与内容编排
+
+| 命令 | 用途 |
+|---|---|
+| `as wechatoa article import <md> --assets <文章根> [--cover <封面图>]` | MD+配图建文章（配图按 MD 顺序上传；`--cover` 设封面——不传则发布回退首图） |
+| `as wechatoa article prepare/preview/publish` | 压缩配图定版 revision → 本地预览 → 发布草稿箱（幂等键确定性派生，中断重跑同命令即重放） |
+| `as wechatoa draft publish --file <html> --content-images <图...>` | HTML 直发草稿；正文图超微信 2MB 限制时服务端自动压缩（结果逐张提示前后大小） |
+| `as sheaf` | 内容创作编排十域：captures/topics/masters/variants/assets/briefs/deliveries/receipts/skill |
+
+配图超 2MB 不再是调用方约束：服务端 image 链自动压缩（wechat-content 预设，预算 1.8MB）；压缩服务不可达/失败按 503/502 报错，不静默降级。
+
 ## 认证头
 
 业务请求（ApiKey/学生证）固定使用 `X-Api-Key: ask_...`。`Authorization: Bearer` 槽位只属于会话 access token，不要把 ApiKey 填入 Bearer，也不要把 ApiKey 当 OAuth access token 申请 refresh。不要附加已退役的 `X-Device-Id`。
