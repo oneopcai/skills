@@ -25,7 +25,9 @@
 | `as wechatoa draft publish --file <html> --content-images <图...>` | HTML 直发草稿；正文图超微信 2MB 限制时服务端自动压缩（结果逐张提示前后大小） |
 | `as sheaf` | 内容创作编排十域：captures/topics/masters/variants/assets/briefs/deliveries/receipts/skill |
 
-配图超 2MB 不再是调用方约束：服务端 image 链自动压缩（wechat-content 预设，预算 1.8MB）；压缩服务不可达/失败按 503/502 报错，不静默降级。
+配图超 2MB 不再是调用方约束：服务端 image 链自动压缩（wechat-content 预设，预算 1.8MB）；压缩服务不可达/压缩失败按 503/502 报错，凭据链未放行（workload grant 缺失）按 403 报错——均不静默降级。
+
+`draft publish --content-images` 的占位符格式：正文 HTML 中 `<img data-wx-image src="本地引用">`，服务端按 `data-wx-image` 标记的文档顺序与 `--content-images` 入参顺序一一对应替换为微信图床 URL。
 
 ## 认证头
 
