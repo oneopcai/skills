@@ -25,7 +25,8 @@
 | `as wechatoa article import <md> --assets <文章根> [--force]` | MD+配图建文章分步入口（同内容重复 import 复用，`--force` 新建） |
 | `as wechatoa article prepare/preview/publish` | 压缩配图定版 revision → 本地预览 → 发布草稿箱（幂等键确定性派生，中断重跑同命令即重放） |
 | `as wechatoa article publish <rid> --cover <图>` | 发布定版 revision（内部走统一端点；封面必传） |
-| `as wechatoa template …` | 模板库管理（list/save/delete/default；发布 `--template` 引用） |
+| `as wechatoa template list` | 查看全部可选模板（系统模板 ◆ + 我的模板 ★） |
+| `as wechatoa template save/delete/default` | 自定义模板管理 |
 | `as sheaf` | 内容创作编排十域：captures/topics/masters/variants/assets/briefs/deliveries/receipts/skill |
 
 配图/封面超 2MB 不再是调用方约束：服务端 image 链自动压缩（正文 wechat-content / 封面 wechat-cover 预设，预算均 1.8MB）；压缩服务不可达/压缩失败按 503/502 报错，凭据链未放行（workload grant 缺失）按 403 报错——均不静默降级。
