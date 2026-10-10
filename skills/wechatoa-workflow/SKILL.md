@@ -1,6 +1,6 @@
 ---
 name: wechatoa-workflow
-version: 1.1.0
+version: 1.2.0
 description: "公众号图文文章工作流 skill —— Agent 直接产出标准含图 Markdown 与 assets 配图，经 as wechatoa article import/prepare/preview/publish 五命令走 MD→准备→不可变 revision→草稿箱一条链。当用户要『写一篇公众号图文文章并发布』『从 Markdown 建公众号文章』『预览/发布图文 revision』时使用本技能。"
 metadata:
   requires:
@@ -49,6 +49,7 @@ as me                                   # 已登录（否则先 as +connect）
 as wechatoa accounts list               # 拿公众号 account-id（UUID）
 
 # 1. 导入：MD+assets → 文章（配图按 MD 顺序上传；返回 articleId）
+#    幂等：同内容重复 import 复用既有文章（零重复建文）；--force 强制新建
 #    --assets=含 assets/ 子目录的文章根（如 ./my-article 下有 assets/），不是 assets 目录本身
 #    --cover=封面图（CLI ≥0.6.22）：上传为独立资产并设为文章封面——发布时优先使用；
 #    不传 --cover 时发布回退「第一张配图」当封面（用户在意封面就必须显式给 --cover）
@@ -101,7 +102,7 @@ as wechatoa article publish <revisionId> --account-id <UUID> \
 | prepare failed | 带 failure_code/failure_message；修 MD 后重新 prepare（旧 revision 不可变不受影响） |
 | 配图同名 | logicalPath 是完整归一化路径（`assets/a/x.png` ≠ `assets/b/x.png`），**不按 basename 猜**；封面独立命名 `assets/cover-<原名>`，与 MD 引用同名冲突前置拒绝 |
 | revision 不可变 | 改稿=新 revision；publish 永远针对指定 revisionId |
-| 配图超 2MB | 微信素材库正文图硬限 2MB——`draft publish --content-images` 与 article 流水线的配图超限时**服务端自动压缩**（image 链 wechat-content 预设，CLI ≥0.6.22 发布结果逐张提示「已压缩 X → Y」）；压缩失败/服务不可达按 502/503 报错，不静默降级 |
+| 配图/封面超 2MB | 微信素材库图片硬限 2MB——`draft publish` 的正文图与封面、article 流水线的配图超限时**服务端自动压缩**（正文 wechat-content / 封面 wechat-cover 预设，CLI ≥0.6.22 发布结果逐张/逐张提示「🗜 已压缩 X → Y」）；压缩失败/服务不可达按 502/503、凭据链未放行按 403 报错，不静默降级 |
 
 ## 五、与 sheaf 工作流的关系
 
