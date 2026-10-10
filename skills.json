@@ -29,12 +29,12 @@
     "SKILL.md": "6684a7bdd6392eaf1d4ab774e9c78551bc98a4e8b5f4c02ba6c38e325318d98e",
     "references/agent-card-schema.md": "75b3bfc6485aafeae4d563baf7c536abf7177df56a6009e12294e38ce3fec2bf",
     "references/as-auth.md": "9e5e09fd1d775a16e9dd75d6d863f3cdeca644a6f1cebf589979a14988eaf03e",
-    "references/as-cli-cheatsheet.md": "1e2368ee7c94a57e6570f73d77e9b719d3c83ad2d2dcb7380395890a566f467d",
+    "references/as-cli-cheatsheet.md": "aac5bf9b86482a90bad508b5c98a574379d18125386f331a5f52c892371b1f53",
     "references/as-connect.md": "4912004fd2144b4fcec61b5b2a8ad5a523dcf435f88b6758c7b77ad0b0a4aa17",
     "references/as-hello.md": "c2612b7137cd0a86aebf73e70c615236049febb4ed5872a9705ac08906b9e664",
     "references/as-me.md": "d747cb03b562837b3182e5b297f74e57eb0080881bcc0eac9dd19cf1b3433029",
     "references/as-onboarding.md": "236c9e700ac3070f111c90d5b53e175feeda1e49ca19b2352fccde25c26486ed",
-    "references/as-services.md": "5479acd81510a5e05c869725945dc1bc92646e6b3ec882190eaa4113af5f0f51",
+    "references/as-services.md": "abe99b46938968201f125a099babd86f12e0722096823c21d25d46781311db8a",
     "references/capability-domains.md": "4394aae9ebf26d22185055e83ff09aac20648fabe6d6dbc13543d7bb282fa2a3",
     "references/providers-snapshot.md": "04500769a91b64816aa93b7ba91a386b1035a75148499e99f287caab2217dc15"
    },
@@ -53,7 +53,7 @@
   },
   {
    "name": "wechatoa-workflow",
-   "version": "1.2.2",
+   "version": "1.2.3",
    "path": "skills/wechatoa-workflow",
    "minCliVersion": "0.6.22",
    "description": "公众号图文文章工作流：MD+assets 配图 → article import(--cover)/prepare/preview/publish 五命令一条链（压缩定版/幂等发布/失败处置）",
@@ -61,7 +61,7 @@
     "SKILL.md"
    ],
    "sha256": {
-    "SKILL.md": "fa6988bb2ddf838b1c361e2bce6cbf5c6a47d0f4cb92db8bcb007c375c422bd0"
+    "SKILL.md": "0b9171ce15b02dc574027832a418d8238ac08b972f053a77abb9b7d52dfba3ea"
    },
    "cli_commands": [
     "as wechatoa article import",
@@ -82,7 +82,7 @@
     "scripts/full-journey.sh"
    ],
    "sha256": {
-    "SKILL.md": "c2afebc479c9c9c0b537c9edeb72162fe71e59e094cac81a42fbc1f4235a9f63",
+    "SKILL.md": "7437f7d7c2f2257d286be4fb7b43277961e7c8f553f54da1ba3dbfc539cc120d",
     "scripts/full-journey.sh": "d3125aae2875086a07c40b0b8fb685c110433d020d9fe3b287a0b76b68a26d2d"
    },
    "cli_commands": [

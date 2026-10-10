@@ -1,6 +1,6 @@
 ---
 name: wechatoa-workflow
-version: 1.2.2
+version: 1.2.3
 description: "公众号图文发布工作流 skill —— Agent 产出标准含图 Markdown 与封面后，as wechatoa publish 一键发布到草稿箱（服务端模板渲染+封面必传）；需要分步编辑/预览/定版时用 as wechatoa article 命令组，发布统一走 as wechatoa publish 或 article publish --cover。当用户要『发图文到公众号』『一键发布 MD』『排版模板』『预览/发布 revision』时使用本技能。"
 metadata:
   requires:
@@ -30,8 +30,9 @@ metadata:
 
 **分步编排（可选）**：`as wechatoa article import/update/prepare/preview` 建稿-定版-预览，
 `article publish <revisionId> --cover <图>` 发布定版（内部同走统一端点）。
-**模板管理**：`as wechatoa template list/save/delete/default`（用户级模板库；发布
-`--template` 引用，不传用账户默认）。`as wechatoa draft publish` 已移除（统一入口=publish）。
+**模板管理**：`as wechatoa template list/save/delete/default`——list 动态展示系统模板
+（◆ 段，`--template <名>` 直接引用，不可删除）+ 我的模板（★ 段，save 创建）。
+发布 `--template` 不传用账户默认。
 
 权限：article 域读写需 `wechatoa.article.read` / `wechatoa.article.write`，
 发布与模板需 `wechatoa.draft.publish` / 模板读写码（403 联系管理员开放）。
@@ -115,11 +116,8 @@ as wechatoa article publish <revisionId> --account-id <UUID> \
 | 配图同名 | logicalPath 是完整归一化路径（`assets/a/x.png` ≠ `assets/b/x.png`），**不按 basename 猜**；封面独立命名 `assets/cover-<原名>`，与 MD 引用同名冲突前置拒绝 |
 | revision 不可变 | 改稿=新 revision；publish 永远针对指定 revisionId |
 | 封面 | **发布必传**（publish/article publish 的 --cover；微信硬性要求）——纯文字文章也必须给封面，无兜底 |
-| 配图/封面超 2MB | 微信素材库图片硬限 2MB——`draft publish` 的正文图与封面、article 流水线的配图超限时**服务端自动压缩**（正文 wechat-content / 封面 wechat-cover 预设，CLI ≥0.6.22 发布结果逐张/逐张提示「🗜 已压缩 X → Y」）；压缩失败/服务不可达按 502/503、凭据链未放行按 403 报错，不静默降级 |
+| 配图/封面超 2MB | 微信素材库图片硬限 2MB——正文图与封面超限时**服务端自动压缩**（正文 wechat-content / 封面 wechat-cover 预设，CLI ≥0.6.22 发布结果逐张/逐张提示「🗜 已压缩 X → Y」）；压缩失败/服务不可达按 502/503、凭据链未放行按 403 报错，不静默降级 |
 
 ## 五、与 sheaf 工作流的关系
 
 sheaf-workflow（收藏→选题→变体→投递建稿）面向**多账号变体投递**，建稿走
-`as wechatoa draft publish`（HTML+封面直投草稿箱）。本技能面向**单篇图文文章的
-MD 全生命周期**（导入/准备/预览/发布）。两条链共享 wechatoa 账号与草稿箱，按需
-选用：变体矩阵走 sheaf，单篇图文走 article。

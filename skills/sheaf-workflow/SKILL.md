@@ -35,7 +35,7 @@ sheaf（内容编排）与 wechatoa（公众号平台）组合成一条完整旅
 - **幂等键**：写操作带 `--client-request-id`（或 `--idempotency-key`）——网络
   重试同键返回原结果；不传则每次生成新键（不可跨次重试）。
 - **投递三段式**：`deliveries prepare`（sheaf 固定 payload+资产+账号）→
-  `as wechatoa draft publish`（真正建稿，带 `--intent-id` + `--idempotency-key`）
+  `as wechatoa publish --file <html>`（HTML 直发，带 `--intent-id` + `--idempotency-key`）
   → `deliveries reconcile`（提交回执，**服务端核对后才 synced**；unknown=安全
   降级，勿盲目重新建稿）。
 - **账号边界**：平台账号（公众号）增删改在 wechatoa 工作台；sheaf 只读画像。
@@ -97,8 +97,8 @@ as files download <coverFileId> --output cover.img
 
 # 8. 建稿（复用 wechatoa 平台命令——sheaf 不新建微信命令）→ 回执核对
 #    （兼容说明：图文文章的 MD 全生命周期另走 as wechatoa article 五命令组，
-#     见 skills/wechatoa-workflow——变体投递仍走本步 draft publish，两链不混用）
-as wechatoa draft publish --account-id <delivery.accountId> \
+#     见 skills/wechatoa-workflow——变体投递走 wechatoa publish --file）
+as wechatoa publish --file article.html --account-id <delivery.accountId> \
   --file article.html --title "<title>" --cover cover.img \
   [--content-images content-1.img ...] \
   --intent-id <delivery.id> --idempotency-key <delivery.idempotencyKey>

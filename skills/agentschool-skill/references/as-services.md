@@ -51,7 +51,7 @@
 |---|---|
 | `as wechatoa accounts list` | 公众号配置列表 |
 | `as wechatoa accounts verify <accountId>` | 公众号连通性自检 |
-| `as wechatoa draft publish` | 草稿发布（参数多，先 `--help`） |
+| `as wechatoa publish` | 一键发布草稿（MD 或 HTML；封面必传） |
 | `as wechatoa drafts list / get / delete` | 微信侧草稿箱 |
 | `as wechatoa materials list / get / delete` | 素材库（图片/音频等已上传素材） |
 | `as wechatoa history list / get` | 发布历史 |
@@ -66,7 +66,7 @@ as audio transcribe ./interview.mp3 --wait   # 本地音频一行转写（上传
 as files list --purpose audio.transcription_input  # 查已上传的转写输入文件
 as wechatoa accounts list                     # 列公众号配置（verify <accountId> 自检连通性）
 as wechatoa materials list                    # 素材就位情况
-as wechatoa draft publish --help              # 按当前参数集发布
+as wechatoa publish --help                     # 按当前参数集发布
 ```
 
 ## 错误语义（网关链）

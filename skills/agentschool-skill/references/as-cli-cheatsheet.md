@@ -31,7 +31,7 @@
 
 配图/封面超 2MB 不再是调用方约束：服务端 image 链自动压缩（正文 wechat-content / 封面 wechat-cover 预设，预算均 1.8MB）；压缩服务不可达/压缩失败按 503/502 报错，凭据链未放行（workload grant 缺失）按 403 报错——均不静默降级。
 
-`draft publish --content-images` 的占位符格式：正文 HTML 中 `<img data-wx-image src="本地引用">`，服务端按 `data-wx-image` 标记的文档顺序与 `--content-images` 入参顺序一一对应替换为微信图床 URL。
+`publish --file --content-images` 的占位符格式：正文 HTML 中 `<img data-wx-image src="本地引用">`，服务端按 `data-wx-image` 标记的文档顺序与 `--content-images` 入参顺序一一对应替换为微信图床 URL。
 
 ## 认证头
 
