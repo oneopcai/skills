@@ -37,7 +37,17 @@
     "references/as-services.md": "5479acd81510a5e05c869725945dc1bc92646e6b3ec882190eaa4113af5f0f51",
     "references/capability-domains.md": "4394aae9ebf26d22185055e83ff09aac20648fabe6d6dbc13543d7bb282fa2a3",
     "references/providers-snapshot.md": "04500769a91b64816aa93b7ba91a386b1035a75148499e99f287caab2217dc15"
-   }
+   },
+   "cli_commands": [
+    "as +connect",
+    "as auth login",
+    "as mint parse",
+    "as wechatoa article",
+    "as sheaf",
+    "as files",
+    "as tasks",
+    "as doctor"
+   ]
   },
   {
    "name": "wechatoa-workflow",
@@ -50,7 +60,14 @@
    ],
    "sha256": {
     "SKILL.md": "02c5762316836ba97ec475f422512ec6ddf7fa651f0e9fd05829230c64f03f57"
-   }
+   },
+   "cli_commands": [
+    "as wechatoa article import",
+    "as wechatoa article prepare",
+    "as wechatoa article preview",
+    "as wechatoa article publish",
+    "as wechatoa draft publish"
+   ]
   },
   {
    "name": "sheaf-workflow",
@@ -65,7 +82,15 @@
    "sha256": {
     "SKILL.md": "c2afebc479c9c9c0b537c9edeb72162fe71e59e094cac81a42fbc1f4235a9f63",
     "scripts/full-journey.sh": "d3125aae2875086a07c40b0b8fb685c110433d020d9fe3b287a0b76b68a26d2d"
-   }
+   },
+   "cli_commands": [
+    "as sheaf captures",
+    "as sheaf topics",
+    "as sheaf masters",
+    "as sheaf variants",
+    "as sheaf deliveries",
+    "as sheaf receipts"
+   ]
   }
  ],
  "agents": [
