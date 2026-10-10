@@ -1,12 +1,12 @@
 ---
 name: wechatoa-workflow
-version: 1.2.0
-description: "公众号图文文章工作流 skill —— Agent 直接产出标准含图 Markdown 与 assets 配图，经 as wechatoa article import/prepare/preview/publish 五命令走 MD→准备→不可变 revision→草稿箱一条链。当用户要『写一篇公众号图文文章并发布』『从 Markdown 建公众号文章』『预览/发布图文 revision』时使用本技能。"
+version: 1.2.1
+description: "公众号图文发布工作流 skill —— Agent 产出标准含图 Markdown 与封面后，as wechatoa publish 一键发布到草稿箱（服务端模板渲染+封面必传）；需要分步编辑/预览/定版时用 as wechatoa article 命令组，发布统一走 as wechatoa publish 或 article publish --cover。当用户要『发图文到公众号』『一键发布 MD』『排版模板』『预览/发布 revision』时使用本技能。"
 metadata:
   requires:
     bins: ["as"]
     node: ">=22"
-  cliHelp: "as wechatoa article --help"
+  cliHelp: "as wechatoa publish --help"
   projectHome: "https://agentschool.me"
   scopeList:
     - article: 图文文章（MD+assets → 文章 → 不可变 revision）
@@ -18,11 +18,19 @@ metadata:
 
 # Wechatoa 图文文章工作流（Markdown → 公众号草稿箱）
 
-`as wechatoa article` 命令组来自 npm 包 `@oneopcai/agentschool-cli`（≥0.6.21；`--cover` 与压缩结果提示需 ≥0.6.22）。
-本技能指导 Agent 直接产出**标准含图 Markdown + assets 配图目录**，再经五命令走完
-导入 → 更新 → 准备 → 预览 → 发布全链。权限：读写需 `wechatoa.article.read` /
-`wechatoa.article.write`，发布另需 `wechatoa.draft.publish`（403 时联系管理员
-给所在组开放 wechatoa 能力）。
+命令来自 npm 包 `@oneopcai/agentschool-cli`（统一发布面需 ≥0.6.25）。
+
+**一键发布（主路径）**：`as wechatoa publish <md> --cover <封面图> [--template <模板名>] [--assets <文章根>]`
+——服务端统一端点 markdown 模式：模板渲染 → 配图上传（超 2MB 自动压缩）→ 建稿草稿箱。
+**封面必传**（微信硬性要求；不传直接报错，无任何兜底）。
+
+**分步编排（可选）**：`as wechatoa article import/update/prepare/preview` 建稿-定版-预览，
+`article publish <revisionId> --cover <图>` 发布定版（内部同走统一端点）。
+**模板管理**：`as wechatoa template list/save/delete/default`（用户级模板库；发布
+`--template` 引用，不传用账户默认）。`as wechatoa draft publish` 已移除（统一入口=publish）。
+
+权限：article 域读写需 `wechatoa.article.read` / `wechatoa.article.write`，
+发布与模板需 `wechatoa.draft.publish` / 模板读写码（403 联系管理员开放）。
 
 ## 一、标准含图 Markdown 产出规范（Agent 写稿纪律）
 
@@ -102,6 +110,7 @@ as wechatoa article publish <revisionId> --account-id <UUID> \
 | prepare failed | 带 failure_code/failure_message；修 MD 后重新 prepare（旧 revision 不可变不受影响） |
 | 配图同名 | logicalPath 是完整归一化路径（`assets/a/x.png` ≠ `assets/b/x.png`），**不按 basename 猜**；封面独立命名 `assets/cover-<原名>`，与 MD 引用同名冲突前置拒绝 |
 | revision 不可变 | 改稿=新 revision；publish 永远针对指定 revisionId |
+| 封面 | **发布必传**（publish/article publish 的 --cover；微信硬性要求）——纯文字文章也必须给封面，无兜底 |
 | 配图/封面超 2MB | 微信素材库图片硬限 2MB——`draft publish` 的正文图与封面、article 流水线的配图超限时**服务端自动压缩**（正文 wechat-content / 封面 wechat-cover 预设，CLI ≥0.6.22 发布结果逐张/逐张提示「🗜 已压缩 X → Y」）；压缩失败/服务不可达按 502/503、凭据链未放行按 403 报错，不静默降级 |
 
 ## 五、与 sheaf 工作流的关系
