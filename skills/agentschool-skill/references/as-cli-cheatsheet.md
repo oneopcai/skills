@@ -21,6 +21,7 @@
 | 命令 | 用途 |
 |---|---|
 | `as wechatoa publish <md> --cover <图> [--template <名>] [--assets <文章根>]` | 一键发布草稿箱（封面必传——微信硬性要求无兜底；服务端模板渲染+自动压缩） |
+| `as wechatoa publish --file <html> --cover <图> [--content-images <图...>]` | HTML 直发草稿箱（与 `<md>` 互斥；正文图按 `data-wx-image` 占位符顺序对位；超 2MB 自动压缩） |
 | `as wechatoa article import <md> --assets <文章根> [--force]` | MD+配图建文章分步入口（同内容重复 import 复用，`--force` 新建） |
 | `as wechatoa article prepare/preview/publish` | 压缩配图定版 revision → 本地预览 → 发布草稿箱（幂等键确定性派生，中断重跑同命令即重放） |
 | `as wechatoa article publish <rid> --cover <图>` | 发布定版 revision（内部走统一端点；封面必传） |
