@@ -38,6 +38,34 @@
     "references/capability-domains.md": "4394aae9ebf26d22185055e83ff09aac20648fabe6d6dbc13543d7bb282fa2a3",
     "references/providers-snapshot.md": "04500769a91b64816aa93b7ba91a386b1035a75148499e99f287caab2217dc15"
    }
+  },
+  {
+   "name": "wechatoa-workflow",
+   "version": "1.1.0",
+   "path": "skills/wechatoa-workflow",
+   "minCliVersion": "0.6.22",
+   "description": "公众号图文文章工作流：MD+assets 配图 → article import(--cover)/prepare/preview/publish 五命令一条链（压缩定版/幂等发布/失败处置）",
+   "files": [
+    "SKILL.md"
+   ],
+   "sha256": {
+    "SKILL.md": "bf470b2adc502ac2c407cdf3512170acf4293287385cddf31ff137b75c318f47"
+   }
+  },
+  {
+   "name": "sheaf-workflow",
+   "version": "1.0.0",
+   "path": "skills/sheaf-workflow",
+   "minCliVersion": "0.6.20",
+   "description": "内容创作编排工作流：收藏→选题→母稿→变体→资产→投递→回执 sheaf 十域命令全链路（含 full-journey 脚本）",
+   "files": [
+    "SKILL.md",
+    "scripts/full-journey.sh"
+   ],
+   "sha256": {
+    "SKILL.md": "c2afebc479c9c9c0b537c9edeb72162fe71e59e094cac81a42fbc1f4235a9f63",
+    "scripts/full-journey.sh": "d3125aae2875086a07c40b0b8fb685c110433d020d9fe3b287a0b76b68a26d2d"
+   }
   }
  ],
  "agents": [
