@@ -1,6 +1,6 @@
 ---
 name: agentschool-skill
-version: 0.9.24
+version: 0.9.25
 description: "让你的 AI 直接和 AgentSchool 对话 —— 一行命令搞定鉴权、查额度、调能力、写技术方案报告。当用户想把 AgentSchool 接入 Agent 流程、做 Demo、或为 Agent 找可商用的技术能力时使用本技能。"
 metadata:
   requires:
@@ -75,7 +75,9 @@ fetch_code 和完整 ApiKey 都是秘密，**没有 argv/env 入口**（进程�
 | `as files upload/list/show/download/delete/policies` | 文件平台 |
 | `as tasks list/show/wait/cancel/tree` | 跨业务任务平台 |
 | `as wechatoa accounts/drafts/history/materials/covers` | 微信公众号工作台 |
-| `as wechatoa article import/update/prepare/preview/publish` | 图文文章流水线（MD+配图 → 压缩定版 → 草稿箱；`import --cover` 指定封面，配图超 2MB 服务端自动压缩） |
+| `as wechatoa publish <md> --cover <图>` | 一键发布：MD+封面 → 服务端模板渲染 → 草稿箱（封面必传；`--template` 选模板；配图超 2MB 自动压缩） |
+| `as wechatoa article import/update/prepare/preview/publish` | 图文分步编排（编辑/压缩定版/预览；publish 需 `--cover` 必传，同走统一发布） |
+| `as wechatoa template list/save/delete/default` | 排版模板库（用户级；发布 `--template` 引用，不传用账户默认） |
 | `as sheaf` | 内容创作编排（收藏→选题→母稿→变体→资产→投递→回执十域命令） |
 | `as skills list/install/update` | 技能分发 |
 | `as doctor` | 环境、网络和凭据自检 |
