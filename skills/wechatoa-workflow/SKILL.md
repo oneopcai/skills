@@ -1,6 +1,6 @@
 ---
 name: wechatoa-workflow
-version: 1.2.1
+version: 1.2.2
 description: "公众号图文发布工作流 skill —— Agent 产出标准含图 Markdown 与封面后，as wechatoa publish 一键发布到草稿箱（服务端模板渲染+封面必传）；需要分步编辑/预览/定版时用 as wechatoa article 命令组，发布统一走 as wechatoa publish 或 article publish --cover。当用户要『发图文到公众号』『一键发布 MD』『排版模板』『预览/发布 revision』时使用本技能。"
 metadata:
   requires:
@@ -23,6 +23,10 @@ metadata:
 **一键发布（主路径）**：`as wechatoa publish <md> --cover <封面图> [--template <模板名>] [--assets <文章根>]`
 ——服务端统一端点 markdown 模式：模板渲染 → 配图上传（超 2MB 自动压缩）→ 建稿草稿箱。
 **封面必传**（微信硬性要求；不传直接报错，无任何兜底）。
+
+**HTML 直发**：`as wechatoa publish --file <f.html> --cover <封面图> [--content-images <图...>]`
+——自有排版 HTML 直入草稿箱；正文图按 HTML 中 `data-wx-image` 占位符顺序与 `--content-images`
+入参顺序对位（超 2MB 服务端自动压缩）。与 `<md>` 互斥。
 
 **分步编排（可选）**：`as wechatoa article import/update/prepare/preview` 建稿-定版-预览，
 `article publish <revisionId> --cover <图>` 发布定版（内部同走统一端点）。

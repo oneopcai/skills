@@ -53,7 +53,7 @@
   },
   {
    "name": "wechatoa-workflow",
-   "version": "1.2.1",
+   "version": "1.2.2",
    "path": "skills/wechatoa-workflow",
    "minCliVersion": "0.6.22",
    "description": "公众号图文文章工作流：MD+assets 配图 → article import(--cover)/prepare/preview/publish 五命令一条链（压缩定版/幂等发布/失败处置）",
@@ -61,7 +61,7 @@
     "SKILL.md"
    ],
    "sha256": {
-    "SKILL.md": "e05ae55dae4f5b317e55b023ef6af79c44dc297b98dd88566fe332add6f31bbb"
+    "SKILL.md": "fa6988bb2ddf838b1c361e2bce6cbf5c6a47d0f4cb92db8bcb007c375c422bd0"
    },
    "cli_commands": [
     "as wechatoa article import",
