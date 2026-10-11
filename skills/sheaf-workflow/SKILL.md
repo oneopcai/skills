@@ -1,7 +1,7 @@
 ---
 name: sheaf-workflow
-version: 1.0.0
-description: "内容创作全旅程 skill —— 从收藏素材到公众号草稿落箱一条链：收藏→选题→项目→母稿确认→账号稿变体→封面/正文图资产集合→投递意图 prepare→经 wechatoa 建稿→reconcile 回执核对。当用户要『把这篇素材做成公众号文章并放进草稿箱』『走一遍 sheaf 创作流程』『从链接到草稿』时使用本技能。"
+version: 1.0.1
+description: "内容创作全旅程 skill —— 从收藏素材到公众号文章落库一条链：收藏→选题→项目→母稿确认→账号稿变体→封面/正文图资产集合→投递意图 prepare→终稿 MD+图集交 wechatoa 文章域（article import）→reconcile 文章回执核对。当用户要『把这篇素材做成公众号文章』『走一遍 sheaf 创作流程』『从链接到文章』时使用本技能。"
 metadata:
   requires:
     bins: ["as"]
@@ -16,7 +16,7 @@ metadata:
     - master: 母稿（CAS 草稿编辑 + 不可变确认版本）
     - variants: 账号稿变体（target=wechatoa,账号ID；版本固定来源）
     - assets: 图片资产集合（不可变 revision 链；cover/content 槽位）
-    - deliveries: 投递意图与回执核对（prepare 固定 payload → wechatoa 建稿 → reconcile）
+    - deliveries: 投递意图与文章回执核对（prepare 冻结材料 → wechatoa article import 交稿 → reconcile article_receipt）
     - skills: Skill 执行登记（本 skill 运行时自登记，聊天历史不当事实源）
 ---
 
@@ -43,7 +43,7 @@ sheaf（内容编排）与 wechatoa（公众号平台）组合成一条完整旅
 ## 前置条件
 
 ```bash
-as me                       # 已登录（未登录先 as +connect 或 as auth login）
+as +me                      # 已登录（未登录先 as +connect 或 as auth login）
 as wechatoa accounts list   # 拿目标公众号 account-id（UUID）
 ```
 
@@ -88,23 +88,27 @@ as sheaf assets set --variant-id <variantId> --variant-version-id <variantVersio
 as sheaf assets reorder --variant-id <variantId> --asset-set-id <assetSetId> --base-revision 1 \
   --item cover,file=<coverFileId>,purpose=general.image --item content,file=<contentFileId>,purpose=general.image --json
 
-# 7. 投递意图（输出完整可重建材料：intentId / idempotencyKey / renderedContent / assetSetRevision）
-as sheaf deliveries prepare --variant-version-id <variantVersionId> --operation-kind draft_create --json
+# 7. 投递意图（v2 合同：只带 variantVersionId——目标继承 confirmed 版本，
+#    交稿动作由目标服务决定；输出冻结材料 renderedContent/payloadAssets）
+as sheaf deliveries prepare --variant-version-id <variantVersionId> --json
 # renderedContent.contentRef=变体版本（结构化引用）：正文经版本链取回
-as sheaf variants list --variant-id <contentRef> --json   # → items[].contentMd（Agent 按画像渲染成 HTML）
+# （--json 双形状：sheaf 各 list 返回裸数组，勿假设 {items} 信封）
+as sheaf variants list --variant-id <variantId> --json   # → 找 id==contentRef 的 contentMd/contentSha256
 # payloadAssets 里的图片 fileId 随时可取回（Files，按当前用户授权）：
-as files download <coverFileId> --output cover.img
+as files download <coverFileId> --output assets/<原文件名>   # 文件名=原名（logicalPath 对位）
 
-# 8. 建稿（复用 wechatoa 平台命令——sheaf 不新建微信命令）→ 回执核对
-#    （兼容说明：图文文章的 MD 全生命周期另走 as wechatoa article 五命令组，
-#     见 skills/wechatoa-workflow——变体投递走 wechatoa publish --file）
-as wechatoa publish --file article.html --account-id <delivery.accountId> \
-  --file article.html --title "<title>" --cover cover.img \
-  [--content-images content-1.img ...] \
-  --intent-id <delivery.id> --idempotency-key <delivery.idempotencyKey>
-# → 输出 operation_id
-as sheaf deliveries reconcile --delivery-id <delivery.id> --operation-id <operation_id>
-# → synced（East-West 回执核对）；unknown=回执未到，稍后重跑 reconcile
+# 8. 交稿 wechatoa 文章域（终稿 MD+图集 → article import 建文+资产上传）→ 回执核对
+#    v2 证据唯一形态=article_receipt（文章创建+资产上传结果；发布状态在
+#    wechatoa 侧查询——as wechatoa article prepare/preview/publish，sheaf 只到核对）
+#    MD 引用 ![配图](assets/<名>) 按顺序对位 content 槽；封面走 --cover
+as wechatoa article import article.md --assets <文章根目录> --cover assets/<封面文件> \
+  --account-id <delivery.accountId> --json
+# → articleId / assets[{logicalPath,assetId}] / coverAssetId
+as sheaf deliveries reconcile --delivery-id <delivery.id> \
+  --article-id <articleId> --title "<冻结标题>" --markdown-sha256 <变体版本 contentSha256> \
+  --asset slot=cover,logical-path=assets/<封面名>,asset-id=<coverAssetId>,sha256=<文件哈希> \
+  --asset slot=content,logical-path=assets/<配图名>,asset-id=<assetId>,sha256=<文件哈希> --json
+# → synced（标题/正文哈希/资产逐位核对通过）；unknown=安全降级，稍后重跑 reconcile
 ```
 
 ## 中断续接（旅程任一步失败后）
@@ -112,9 +116,10 @@ as sheaf deliveries reconcile --delivery-id <delivery.id> --operation-id <operat
 每步产物都是 UUID，重跑对应命令即可续接（幂等键保护重复提交）：
 
 - 母稿 409 → `as sheaf master get --project-id ...` 拿最新 draftVersion 重编辑；
-- prepare 后中断 → `as sheaf deliveries list --variant-version-id ...` 找回意图
-  （payload/幂等键都在），重下材料继续；
-- 建稿后未核对 → 重跑 reconcile（可省略 --operation-id，按已记录操作重新核对）；
+- prepare 后中断 → `as sheaf deliveries get <intentId>` 找回意图与冻结材料，
+  重下材料继续；
+- 交稿后未核对 → 重跑 reconcile（同一 --client-request-id 幂等；证据须重新
+  组装 article_receipt——articleId/标题/哈希/资产对位）；
 - 变体版本要改 → 新建版本（旧版不可变），再对新版本 prepare。
 
 ## Skill 执行登记（可选但推荐）
@@ -122,7 +127,7 @@ as sheaf deliveries reconcile --delivery-id <delivery.id> --operation-id <operat
 Agent 宿主执行本工作流时登记到 sheaf（聊天历史不当事实源）：
 
 ```bash
-as sheaf skills run --skill-id sheaf-workflow --manifest-version 1.0.0 \
+as sheaf skills run --skill-id sheaf-workflow --manifest-version 1.0.1 \
   --host <宿主名> --external-run-id <宿主run ID> --input-ref project:<projectId> --json
 # 每步完成后：
 as sheaf skills report --run-id <runId> --step-id <stepId> --attempt-index 1 \

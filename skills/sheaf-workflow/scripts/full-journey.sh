@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # sheaf-workflow：内容创作全旅程一键脚本（收藏→选题→项目→母稿→变体→资产→
-# prepare→wechatoa 建稿→reconcile 回执核对）。
+# prepare→wechatoa 文章域交稿→reconcile 回执核对——v2 合同 article_receipt）。
 #
 # 用法：
 #   ./full-journey.sh --account <wechatoa账号UUID> [选项]
@@ -12,9 +12,9 @@
 #   --cover <file>         封面图 jpg/png（缺省生成 1x1 占位 PNG）
 #   --content-image <file> 正文图（缺省生成 1x1 占位 PNG；可多次）
 #   --workdir <dir>        工作目录（默认 mktemp，保留全部中间产物）
-#   --skip-publish         到 prepare 为止（不调 wechatoa、不 reconcile）
+#   --skip-publish         到 prepare 为止（不交稿 wechatoa、不 reconcile）
 #
-# 依赖：as（@oneopcai/agentschool-cli ≥0.7.0）已登录；node ≥22（JSON 提取）。
+# 依赖：as（@oneopcai/agentschool-cli ≥0.6.34）已登录；node ≥22（JSON 提取）。
 # 幂等性：每次运行创建新选题/项目（标题带时间戳）；写操作幂等键带运行序号，
 # 同一次运行内重试安全。
 # =============================================================================
@@ -169,61 +169,91 @@ for fid in "${CONTENT_FILE_IDS[@]}"; do REORDER_ARGS+=("--item" "content,file=${
 ASET2="$(asj assets-reorder sheaf assets reorder "${REORDER_ARGS[@]}")"
 step "assetSet=$(printf '%s' "$ASET2" | jget '.id') revision=$(printf '%s' "$ASET2" | jget '.revision')（cover×1 content×${#CONTENT_FILE_IDS[@]}）"
 
-# ── 7. 投递意图 prepare（固定 payload；输出可重建材料） ──────────────────────
+# ── 7. 投递意图 prepare（冻结材料）+ 终稿/图集取回 ─────────────────────────
 log "7/8 投递意图 prepare"
-DELIVERY="$(asj delivery sheaf deliveries prepare --variant-version-id "$VARIANT_VERSION_ID" --operation-kind draft_create)"
+# v2 合同：prepare 只带 variantVersionId（目标继承 confirmed 版本；交稿动作由
+# 目标服务决定——无 operationKind）；幂等键缺省自动生成
+DELIVERY="$(asj delivery sheaf deliveries prepare --variant-version-id "$VARIANT_VERSION_ID")"
 DELIVERY_ID="$(printf '%s' "$DELIVERY" | jget '.id')"
-IDEMPOTENCY_KEY="$(printf '%s' "$DELIVERY" | jget '.idempotencyKey')"
 CONTENT_REF="$(printf '%s' "$DELIVERY" | jget '.renderedContent.contentRef')"
 ARTICLE_TITLE="$(printf '%s' "$DELIVERY" | jget '.renderedContent.title')"
 # contentRef=变体版本（结构化引用）：正文经版本链取回（本脚本自持 VARIANT_ID；
-# 续接场景从 delivery.variantId 列版本后按 id 匹配），包成最小 HTML 供 wechatoa
-# 建稿（生产旅程由 Agent 按账号画像渲染）
+# 续接场景从 delivery.variantId 列版本后按 id 匹配）。v2 交稿=终稿 MD+图集交
+# wechatoa 文章域（article import），不再本地 HTML 化。
+# --json 形状双兼容：sheaf 各 list 返回裸数组（第 1 轮 C4——勿假设 {items} 信封）
 as --json sheaf variants list --variant-id "$VARIANT_ID" > "${WORKDIR}/variant-versions.json"
-node -e "
-  const fs=require('fs');
-  const d=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));
-  const md=((d.items||[]).find(it=>it.id===process.argv[2]) ?? (d.items||[])[0])?.contentMd ?? '';
-  const title=process.argv[3];
-  const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const html='<html><body><h1>'+esc(title)+'</h1>'+
-    md.split(/\n{2,}/).map(p=>'<p>'+esc(p).replace(/\n/g,'<br>')+'</p>').join('')+
-    '</body></html>';
-  fs.writeFileSync(process.argv[4], html);
-" "${WORKDIR}/variant-versions.json" "$CONTENT_REF" "$ARTICLE_TITLE" "${WORKDIR}/article.html"
-[ -s "${WORKDIR}/article.html" ] || { echo "✗ 正文取回失败（contentRef=${CONTENT_REF}）" >&2; exit 1; }
-step "intent=${DELIVERY_ID} idempotencyKey=${IDEMPOTENCY_KEY} contentRef=${CONTENT_REF} assetSetRevision=$(printf '%s' "$DELIVERY" | jget '.assetSetRevision')"
+node -e '
+  const fs=require("fs");
+  const d=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));
+  const arr=Array.isArray(d)?d:(d.items||[]);
+  const v=(arr.find(it=>it.id===process.argv[2]) ?? arr[0]) ?? {};
+  const md=v.contentMd ?? "";
+  if(!md){console.error("✗ 正文取回为空（contentRef="+process.argv[2]+"）");process.exit(1)}
+  fs.writeFileSync(process.argv[3], md);
+  fs.writeFileSync(process.argv[4], v.contentSha256 ?? "");
+' "${WORKDIR}/variant-versions.json" "$CONTENT_REF" "${WORKDIR}/article.md" "${WORKDIR}/content.sha256"
+[ -s "${WORKDIR}/article.md" ] || { echo "✗ 正文取回失败（contentRef=${CONTENT_REF}）" >&2; exit 1; }
+MARKDOWN_SHA256="$(cat "${WORKDIR}/content.sha256")"
+[ "${#MARKDOWN_SHA256}" = 64 ] || { echo "✗ 变体版本缺 contentSha256（reconcile 证据必需）" >&2; exit 1; }
+step "intent=${DELIVERY_ID} contentRef=${CONTENT_REF} markdownSha256=${MARKDOWN_SHA256:0:12}… assetSetRevision=$(printf '%s' "$DELIVERY" | jget '.assetSetRevision')"
 
 if [ "$SKIP_PUBLISH" = "1" ]; then
   log "完成（--skip-publish：已到 prepare，材料在 ${WORKDIR}）"
   exit 0
 fi
 
-# ── 8. wechatoa 建稿 → reconcile 回执核对 ──────────────────────────────────
-log "8/8 wechatoa 建稿与回执核对"
-# 图片直接用本地原件（与 Files 侧字节同源；重下载需按真实扩展名命名——
-# 伪扩展名（.img）会被 wechatoa→Files 的 purpose 策略按扩展名拒绝）
-CONTENT_DL_ARGS=()
-for img in "${CONTENT_IMAGES[@]}"; do CONTENT_DL_ARGS+=("$(cd "$(dirname "$img")" && pwd)/$(basename "$img")"); done
-PUBLISH_ARGS=(wechatoa draft publish --account-id "$ACCOUNT"
-  --file "${WORKDIR}/article.html" --title "$ARTICLE_TITLE" --cover "$COVER")
-if [ ${#CONTENT_DL_ARGS[@]} -gt 0 ]; then
-  PUBLISH_ARGS+=(--content-images "${CONTENT_DL_ARGS[@]}")
-fi
-PUBLISH_ARGS+=(--intent-id "$DELIVERY_ID" --idempotency-key "$IDEMPOTENCY_KEY")
-PUBLISH="$(asj publish "${PUBLISH_ARGS[@]}")"
-OPERATION_ID="$(printf '%s' "$PUBLISH" | jget '.operation_id')"
-step "media_id=$(printf '%s' "$PUBLISH" | jget '.media_id') operation=${OPERATION_ID}"
+# ── 8. wechatoa 文章域交稿 → reconcile 回执核对（v2：article_receipt） ──────
+log "8/8 wechatoa 文章域交稿与回执核对"
+# v2 交稿链：终稿 MD（含 assets/ 图片引用）+图集 → wechatoa article import
+# （建文+资产上传）→ 组装 article_receipt（articleId/title/markdownSha256/
+# 资产 slot+logicalPath+assetId+sha256 逐位对位冻结材料）→ reconcile。
+# 图片用本地原件（与 Files 侧字节同源；文件名=原名 → logicalPath=assets/<原名>
+# 与冻结资产对位）；正文图引用按 content 槽顺序注入 MD。
+ARTICLE_ROOT="${WORKDIR}/article-root"
+mkdir -p "${ARTICLE_ROOT}/assets"
+cp "$COVER" "${ARTICLE_ROOT}/assets/$(basename "$COVER")"
+for img in "${CONTENT_IMAGES[@]}"; do
+  cp "$img" "${ARTICLE_ROOT}/assets/$(basename "$img")"
+done
+node -e '
+  const fs=require("fs");
+  let md=fs.readFileSync(process.argv[1],"utf8");
+  for(const name of process.argv.slice(3)){
+    const ref="assets/"+name;
+    if(!md.includes("("+ref+")")) md+="\n\n![配图]("+ref+")";
+  }
+  fs.writeFileSync(process.argv[2], md);
+' "${WORKDIR}/article.md" "${ARTICLE_ROOT}/article.md" $(for img in "${CONTENT_IMAGES[@]}"; do basename "$img"; done)
+IMPORT="$(asj import wechatoa article import "${ARTICLE_ROOT}/article.md" --assets "$ARTICLE_ROOT" --cover "${ARTICLE_ROOT}/assets/$(basename "$COVER")" --account-id "$ACCOUNT")"
+ARTICLE_ID="$(printf '%s' "$IMPORT" | jget '.articleId')"
+COVER_ASSET_ID="$(printf '%s' "$IMPORT" | jget '.coverAssetId')"
+step "articleId=${ARTICLE_ID} assets=$(printf '%s' "$IMPORT" | jget '.assets.length')+封面"
 
-RECONCILE="$(asj reconcile sheaf deliveries reconcile --delivery-id "$DELIVERY_ID" --operation-id "$OPERATION_ID")"
+# 组装 article_receipt 证据：slot 顺序=冻结对位（cover 先，content 按 MD 顺序）
+sha256_of() { sha256sum "$1" | cut -d' ' -f1; }
+EVIDENCE_ARGS=(--delivery-id "$DELIVERY_ID" --article-id "$ARTICLE_ID" --title "$ARTICLE_TITLE" --markdown-sha256 "$MARKDOWN_SHA256"
+  --asset "slot=cover,logical-path=assets/$(basename "$COVER"),asset-id=${COVER_ASSET_ID},sha256=$(sha256_of "$COVER")")
+i=0
+for img in "${CONTENT_IMAGES[@]}"; do
+  ASSET_JSON="$(printf '%s' "$IMPORT" | node -e '
+    let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{
+      const d=JSON.parse(s);const a=(d.assets||[])[+process.argv[1]];
+      if(!a){console.error("✗ import 响应缺第 "+(+process.argv[1]+1)+" 个正文资产");process.exit(1)}
+      console.log(a.assetId+" "+a.logicalPath);})' "$i")"
+  ASSET_ID="${ASSET_JSON%% *}"
+  LOGICAL_PATH="${ASSET_JSON#* }"
+  EVIDENCE_ARGS+=(--asset "slot=content,logical-path=${LOGICAL_PATH},asset-id=${ASSET_ID},sha256=$(sha256_of "$img")")
+  i=$((i+1))
+done
+RECONCILE="$(asj reconcile sheaf deliveries reconcile "${EVIDENCE_ARGS[@]}")"
 FINAL_STATUS="$(printf '%s' "$RECONCILE" | jget '.status')"
-step "delivery status=${FINAL_STATUS}"
+step "delivery status=${FINAL_STATUS}（article=${ARTICLE_ID}）"
 
 log "旅程完成：${TITLE}"
-printf '  选题 topic=%s\n  项目 project=%s\n  母稿 masterVersion=%s\n  变体版本 variantVersion=%s\n  投递 intent=%s（%s）\n  材料 workdir=%s\n' \
-  "$TOPIC_ID" "$PROJECT_ID" "$MASTER_VERSION_ID" "$VARIANT_VERSION_ID" "$DELIVERY_ID" "$FINAL_STATUS" "$WORKDIR" >&2
+printf '  选题 topic=%s\n  项目 project=%s\n  母稿 masterVersion=%s\n  变体版本 variantVersion=%s\n  投递 intent=%s（%s，article=%s）\n  材料 workdir=%s\n' \
+  "$TOPIC_ID" "$PROJECT_ID" "$MASTER_VERSION_ID" "$VARIANT_VERSION_ID" "$DELIVERY_ID" "$FINAL_STATUS" "$ARTICLE_ID" "$WORKDIR" >&2
 if [ "$FINAL_STATUS" = "synced" ] || [ "$FINAL_STATUS" = "unknown" ]; then
   exit 0
 fi
-echo "✗ 投递终态非 synced（${FINAL_STATUS}）——排查：as sheaf deliveries list --variant-version-id ${VARIANT_VERSION_ID}" >&2
+echo "✗ 投递终态非 synced（${FINAL_STATUS}）——排查：as sheaf deliveries get ${DELIVERY_ID}（发布另走 wechatoa：as wechatoa article prepare ${ARTICLE_ID}）" >&2
 exit 1

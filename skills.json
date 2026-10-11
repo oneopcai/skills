@@ -73,25 +73,26 @@
   },
   {
    "name": "sheaf-workflow",
-   "version": "1.0.0",
+   "version": "1.0.1",
    "path": "skills/sheaf-workflow",
-   "minCliVersion": "0.6.20",
-   "description": "内容创作编排工作流：收藏→选题→母稿→变体→资产→投递→回执 sheaf 十域命令全链路（含 full-journey 脚本）",
+   "minCliVersion": "0.6.34",
+   "description": "内容创作编排工作流：收藏→选题→母稿→变体→资产→投递→文章回执 sheaf 全链路（含 full-journey 一键脚本；v2 交稿=wechatoa article import）",
    "files": [
     "SKILL.md",
     "scripts/full-journey.sh"
    ],
    "sha256": {
-    "SKILL.md": "7437f7d7c2f2257d286be4fb7b43277961e7c8f553f54da1ba3dbfc539cc120d",
-    "scripts/full-journey.sh": "d3125aae2875086a07c40b0b8fb685c110433d020d9fe3b287a0b76b68a26d2d"
+    "SKILL.md": "ff6bbf72ea05f16fbdb6bce580c15560457154feed8e0d1fd532eb20fc2ade6e",
+    "scripts/full-journey.sh": "461d7d42a35f4687dd1735186367c11f054a1c73cd2af98c5e5654de6cd1247d"
    },
    "cli_commands": [
     "as sheaf captures",
     "as sheaf topics",
-    "as sheaf masters",
+    "as sheaf master",
     "as sheaf variants",
+    "as sheaf assets",
     "as sheaf deliveries",
-    "as sheaf receipts"
+    "as sheaf skills"
    ]
   }
  ],
