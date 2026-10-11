@@ -82,7 +82,7 @@
     "scripts/full-journey.sh"
    ],
    "sha256": {
-    "SKILL.md": "ff6bbf72ea05f16fbdb6bce580c15560457154feed8e0d1fd532eb20fc2ade6e",
+    "SKILL.md": "505d1457643ada468619b86b4fdead2e111775f56fb1f3927d40803e8f5eac6c",
     "scripts/full-journey.sh": "461d7d42a35f4687dd1735186367c11f054a1c73cd2af98c5e5654de6cd1247d"
    },
    "cli_commands": [

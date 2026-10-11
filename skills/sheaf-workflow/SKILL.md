@@ -94,7 +94,10 @@ as sheaf deliveries prepare --variant-version-id <variantVersionId> --json
 # renderedContent.contentRef=变体版本（结构化引用）：正文经版本链取回
 # （--json 双形状：sheaf 各 list 返回裸数组，勿假设 {items} 信封）
 as sheaf variants list --variant-id <variantId> --json   # → 找 id==contentRef 的 contentMd/contentSha256
-# payloadAssets 里的图片 fileId 随时可取回（Files，按当前用户授权）：
+# payloadAssets 里的图片 fileId 随时可取回（Files，按当前用户授权）。
+# 注意：冻结 payloadAssets 只有 slot/fileId/fileSha256——不含文件名；证据对位
+# 基准=Files 元数据里的原文件名（组装 assets/ 时用上传时的原件名即天然一致，
+# 重下载场景先 GET /v1/files/{id} 查 filename 再命名落盘）
 as files download <coverFileId> --output assets/<原文件名>   # 文件名=原名（logicalPath 对位）
 
 # 8. 交稿 wechatoa 文章域（终稿 MD+图集 → article import 建文+资产上传）→ 回执核对
