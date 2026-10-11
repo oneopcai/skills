@@ -1,6 +1,6 @@
 ---
 name: sheaf-workflow
-version: 1.0.1
+version: 1.0.2
 description: "内容创作全旅程 skill —— 从收藏素材到公众号文章落库一条链：收藏→选题→项目→母稿确认→账号稿变体→封面/正文图资产集合→投递意图 prepare→终稿 MD+图集交 wechatoa 文章域（article import）→reconcile 文章回执核对。当用户要『把这篇素材做成公众号文章』『走一遍 sheaf 创作流程』『从链接到文章』时使用本技能。"
 metadata:
   requires:
@@ -123,7 +123,11 @@ as sheaf deliveries reconcile --delivery-id <delivery.id> \
   重下材料继续；
 - 交稿后未核对 → 重跑 reconcile（同一 --client-request-id 幂等；证据须重新
   组装 article_receipt——articleId/标题/哈希/资产对位）；
-- 变体版本要改 → 新建版本（旧版不可变），再对新版本 prepare。
+- 变体版本要改 → 新建版本（旧版不可变），**再对新版本 `assets set` + `reorder`
+  重挂资产**（资产集按版本绑定不继承——不重挂则 prepare 冻结空资产集且同版本
+  幂等锁死，补图只能再换版本），最后对新版本 prepare；
+- 已 synced 的意图再 reconcile → 服务端终态短路原样回显（不重核不覆写）；
+  要重核对/换稿走新变体版本 + 新投递意图。
 
 ## Skill 执行登记（可选但推荐）
 
