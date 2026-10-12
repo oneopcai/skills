@@ -1,7 +1,7 @@
 ---
 name: sheaf-workflow
-version: 1.0.2
-description: "内容创作全旅程 skill —— 从收藏素材到公众号文章落库一条链：收藏→选题→项目→母稿确认→账号稿变体→封面/正文图资产集合→投递意图 prepare→终稿 MD+图集交 wechatoa 文章域（article import）→reconcile 文章回执核对。当用户要『把这篇素材做成公众号文章』『走一遍 sheaf 创作流程』『从链接到文章』时使用本技能。"
+version: 1.0.3
+description: "内容创作全旅程 skill —— 从收藏素材到公众号文章落库一条链：收藏→选题→项目→母稿确认→账号稿变体→封面/正文图资产集合→投递意图 prepare→终稿 MD+图集交 wechatoa 文章域（article import）→reconcile 平台读回核验（synced=核验时点事实一致）。当用户要『把这篇素材做成公众号文章』『走一遍 sheaf 创作流程』『从链接到文章』时使用本技能。"
 metadata:
   requires:
     bins: ["as"]
@@ -20,11 +20,13 @@ metadata:
     - skills: Skill 执行登记（本 skill 运行时自登记，聊天历史不当事实源）
 ---
 
-# Sheaf 内容创作工作流（收藏 → 公众号草稿箱）
+# Sheaf 内容创作工作流（收藏 → 公众号文章落库 + 读回核验）
 
 `as sheaf` 命令组来自 npm 包 `@oneopcai/agentschool-cli`（≥0.6.20）。本技能把
 sheaf（内容编排）与 wechatoa（公众号平台）组合成一条完整旅程：**素材进 →
-草稿箱出**，每一步幂等可重试、中断可续。
+文章落库+读回核验 synced**，每一步幂等可重试、中断可续。
+发布到微信公众号草稿箱是 wechatoa 侧的独立动作（`as wechatoa article prepare/publish`），
+不在本旅程终点。
 
 ## 核心概念（先读）
 
@@ -111,7 +113,15 @@ as sheaf deliveries reconcile --delivery-id <delivery.id> \
   --article-id <articleId> --title "<冻结标题>" --markdown-sha256 <变体版本 contentSha256> \
   --asset slot=cover,logical-path=assets/<封面名>,asset-id=<coverAssetId>,sha256=<文件哈希> \
   --asset slot=content,logical-path=assets/<配图名>,asset-id=<assetId>,sha256=<文件哈希> --json
-# → synced（标题/正文哈希/资产逐位核对通过）；unknown=安全降级，稍后重跑 reconcile
+# → synced（服务端读回 wechatoa 平台实际快照核对通过——标题/正文哈希/资产逐位）；
+#   unknown=安全降级（读回暂不可得），稍后重跑 reconcile；
+#   failed=evidence_mismatch（证据与冻结材料不符——核对标题/哈希/资产对位）；
+#   failed=article_not_accessible（文章不存在/跨租户——检查 articleId）；
+#   unknown=article_verification_unavailable（内部服务故障——运维告警，非文章问题）
+# 只读重核形态（旧 synced 迁移后重核）：省略全部回执参数、仅带新 --client-request-id
+as sheaf deliveries reconcile --delivery-id <deliveryId> --client-request-id <新键> --json
+# → 不重复交稿、不动文章内容；结果 status + verification{method,attemptId,checkedAt,contentVersion}
+# 迁移旧态：errorCode=evidence_requires_readback=旧自报 synced 待新读回重核（非失败）
 ```
 
 ## 中断续接（旅程任一步失败后）

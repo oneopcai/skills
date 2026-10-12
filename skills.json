@@ -73,17 +73,17 @@
   },
   {
    "name": "sheaf-workflow",
-   "version": "1.0.2",
+   "version": "1.0.3",
    "path": "skills/sheaf-workflow",
-   "minCliVersion": "0.6.34",
-   "description": "内容创作编排工作流：收藏→选题→母稿→变体→资产→投递→文章回执 sheaf 全链路（含 full-journey 一键脚本；v2 交稿=wechatoa article import）",
+   "minCliVersion": "0.6.36",
+   "description": "内容创作编排工作流：收藏→选题→母稿→变体→资产→投递→平台读回核验 sheaf 全链路（含 full-journey 一键脚本；v2 读回核验=wechatoa article import+reconcile 平台快照核对）",
    "files": [
     "SKILL.md",
     "scripts/full-journey.sh"
    ],
    "sha256": {
-    "SKILL.md": "f7a0f383fcde0917a4dd803581425ff0b934bbd6a0108b19512169c90ea3b412",
-    "scripts/full-journey.sh": "461d7d42a35f4687dd1735186367c11f054a1c73cd2af98c5e5654de6cd1247d"
+    "SKILL.md": "e4bf5d7fe08209035ba119ac44a3ed1bb023a481e37aa5f3528977987455a074",
+    "scripts/full-journey.sh": "635a2d72670f752536dad59c711dfb78b4714ba525db16499396766491d2c322"
    },
    "cli_commands": [
     "as sheaf captures",

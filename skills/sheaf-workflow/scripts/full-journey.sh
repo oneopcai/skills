@@ -14,7 +14,7 @@
 #   --workdir <dir>        工作目录（默认 mktemp，保留全部中间产物）
 #   --skip-publish         到 prepare 为止（不交稿 wechatoa、不 reconcile）
 #
-# 依赖：as（@oneopcai/agentschool-cli ≥0.6.34）已登录；node ≥22（JSON 提取）。
+# 依赖：as（@oneopcai/agentschool-cli ≥0.6.36）已登录；node ≥22（JSON 提取）。
 # 幂等性：每次运行创建新选题/项目（标题带时间戳）；写操作幂等键带运行序号，
 # 同一次运行内重试安全。
 # =============================================================================
@@ -224,7 +224,8 @@ node -e '
   }
   fs.writeFileSync(process.argv[2], md);
 ' "${WORKDIR}/article.md" "${ARTICLE_ROOT}/article.md" $(for img in "${CONTENT_IMAGES[@]}"; do basename "$img"; done)
-IMPORT="$(asj import wechatoa article import "${ARTICLE_ROOT}/article.md" --assets "$ARTICLE_ROOT" --cover "${ARTICLE_ROOT}/assets/$(basename "$COVER")" --account-id "$ACCOUNT")"
+COVER_BASE="$(basename "$COVER")"
+IMPORT="$(asj import wechatoa article import "${ARTICLE_ROOT}/article.md" --assets "$ARTICLE_ROOT" --cover "${ARTICLE_ROOT}/assets/${COVER_BASE}" --cover-logical-path "assets/${COVER_BASE}" --account-id "$ACCOUNT")"
 ARTICLE_ID="$(printf '%s' "$IMPORT" | jget '.articleId')"
 COVER_ASSET_ID="$(printf '%s' "$IMPORT" | jget '.coverAssetId')"
 step "articleId=${ARTICLE_ID} assets=$(printf '%s' "$IMPORT" | jget '.assets.length')+封面"
@@ -252,8 +253,19 @@ step "delivery status=${FINAL_STATUS}（article=${ARTICLE_ID}）"
 log "旅程完成：${TITLE}"
 printf '  选题 topic=%s\n  项目 project=%s\n  母稿 masterVersion=%s\n  变体版本 variantVersion=%s\n  投递 intent=%s（%s，article=%s）\n  材料 workdir=%s\n' \
   "$TOPIC_ID" "$PROJECT_ID" "$MASTER_VERSION_ID" "$VARIANT_VERSION_ID" "$DELIVERY_ID" "$FINAL_STATUS" "$ARTICLE_ID" "$WORKDIR" >&2
-if [ "$FINAL_STATUS" = "synced" ] || [ "$FINAL_STATUS" = "unknown" ]; then
+if [ "$FINAL_STATUS" = "synced" ]; then
+  # 公共出参 verification 非空校验（新 synced 必具非空 verification——公共契约 §五）
+  VERIFIED_AT="$(printf '%s' "$RECONCILE" | jget '.verification.checkedAt' 2>/dev/null || echo "")"
+  if [ -z "$VERIFIED_AT" ]; then
+    echo "✗ synced 但 verification 为空（异常态——公共契约要求新 synced 必具非空 verification）" >&2
+    exit 1
+  fi
+  step "verification.checkedAt=${VERIFIED_AT}（平台读回核验通过）"
   exit 0
 fi
-echo "✗ 投递终态非 synced（${FINAL_STATUS}）——排查：as sheaf deliveries get ${DELIVERY_ID}（发布另走 wechatoa：as wechatoa article prepare ${ARTICLE_ID}）" >&2
+if [ "$FINAL_STATUS" = "unknown" ]; then
+  step "unknown=安全降义（可稍后重跑 reconcile 或用只读重核：as sheaf deliveries reconcile --delivery-id ${DELIVERY_ID} --client-request-id <新键>）"
+  exit 0
+fi
+echo "✗ 投递终态非 synced（${FINAL_STATUS}）——排查：as sheaf deliveries get ${DELIVERY_ID}；只读重核：as sheaf deliveries reconcile --delivery-id ${DELIVERY_ID} --client-request-id <新键>；发布另走 wechatoa：as wechatoa article prepare ${ARTICLE_ID}" >&2
 exit 1
