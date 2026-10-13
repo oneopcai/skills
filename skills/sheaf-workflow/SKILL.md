@@ -1,6 +1,6 @@
 ---
 name: sheaf-workflow
-version: 1.0.7
+version: 1.0.8
 description: "内容创作全旅程 skill —— 从收藏素材到公众号文章落库一条链：收藏→选题→项目→母稿确认→账号稿变体→封面/正文图资产集合→投递意图 prepare→终稿 MD+图集交 wechatoa 文章域（article import）→reconcile 平台读回核验（synced=核验时点事实一致）。当用户要『把这篇素材做成公众号文章』『走一遍 sheaf 创作流程』『从链接到文章』时使用本技能。"
 metadata:
   requires:
@@ -22,7 +22,7 @@ metadata:
 
 # Sheaf 内容创作工作流（收藏 → 公众号文章落库 + 读回核验）
 
-`as sheaf` 命令组来自 CLI `@oneopcai/agentschool-cli`（≥0.6.38；可使用经核验的本地包）。本技能把
+`as sheaf` 命令组来自 CLI `@oneopcai/agentschool-cli`（≥0.6.36；可使用经核验的本地包）。本技能把
 sheaf（内容编排）与 wechatoa（公众号平台）组合成一条完整旅程：**素材进 →
 文章落库+读回核验 synced**，每一步幂等可重试、中断可续。
 发布到微信公众号草稿箱是 wechatoa 侧的独立动作：先 `as wechatoa article prepare

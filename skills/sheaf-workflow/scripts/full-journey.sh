@@ -39,7 +39,7 @@
 # attemptId/checkedAt（带时区）/contentVersion（正整数）齐备。unknown/failed/
 # 无核验摘要一律非零退出（JSON 与恢复指引保留，安全降级不当旅程成功）。
 #
-# 依赖：as（@oneopcai/agentschool-cli ≥0.6.38）已登录；node ≥22（JSON 提取）。
+# 依赖：as（@oneopcai/agentschool-cli ≥0.6.36）已登录；node ≥22（JSON 提取）。
 # 幂等性：每次运行创建新选题/项目（标题带时间戳）；写操作幂等键带运行序号，
 # 同一次运行内重试安全。
 # =============================================================================
@@ -64,6 +64,7 @@ while [ $# -gt 0 ]; do
     --workdir) WORKDIR="$2"; shift 2 ;;
     --prepare-only) PREPARE_ONLY=1; shift ;;
     --recheck-delivery-id) RECHECK_DELIVERY_ID="${2:?}"; shift 2 ;;
+    -h|--help) sed -n '19,36p' "$0" >&2; exit 0 ;;
     *) echo "✗ 未知参数：$1（--help 查看用法）" >&2; exit 2 ;;
   esac
 done
