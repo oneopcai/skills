@@ -8,10 +8,10 @@
  "skills": [
   {
    "name": "agentschool-skill",
-   "version": "0.9.27",
+   "version": "0.9.28",
    "path": "skills/agentschool-skill",
    "minCliVersion": "0.6.0",
-   "description": "AgentSchool CLI 操作指南：认证接入（邮箱验证码直登 / 浏览器 PKCE 两种登录方式）、内容采集（mint）、公众号图文（article 流水线/草稿发布自动压缩）、内容创作编排（sheaf）、音频转写、文件下载断点续传、任务平台全域名",
+   "description": "AgentSchool CLI 操作指南：认证接入（邮箱验证码直登 / 浏览器 PKCE 两种登录方式）、内容采集（mint）、公众号图文（article 流水线含只读 list/get 与草稿发布自动压缩、封面冻结路径）、内容创作编排（sheaf 十域+读回核验）、音频转写、文件下载断点续传、任务平台全域名",
    "files": [
     "SKILL.md",
     "references/agent-card-schema.md",
@@ -26,10 +26,10 @@
     "references/providers-snapshot.md"
    ],
    "sha256": {
-    "SKILL.md": "6684a7bdd6392eaf1d4ab774e9c78551bc98a4e8b5f4c02ba6c38e325318d98e",
+    "SKILL.md": "8743625248547c771dbcadf5bae2aacf8aca9cfff27ba05f5c211442a4077be9",
     "references/agent-card-schema.md": "75b3bfc6485aafeae4d563baf7c536abf7177df56a6009e12294e38ce3fec2bf",
     "references/as-auth.md": "9e5e09fd1d775a16e9dd75d6d863f3cdeca644a6f1cebf589979a14988eaf03e",
-    "references/as-cli-cheatsheet.md": "aac5bf9b86482a90bad508b5c98a574379d18125386f331a5f52c892371b1f53",
+    "references/as-cli-cheatsheet.md": "8caaeabe4306892d9ff2fa236d6df32a15b3d94b7d60abed22f64afd765882de",
     "references/as-connect.md": "4912004fd2144b4fcec61b5b2a8ad5a523dcf435f88b6758c7b77ad0b0a4aa17",
     "references/as-hello.md": "c2612b7137cd0a86aebf73e70c615236049febb4ed5872a9705ac08906b9e664",
     "references/as-me.md": "d747cb03b562837b3182e5b297f74e57eb0080881bcc0eac9dd19cf1b3433029",
@@ -53,7 +53,7 @@
   },
   {
    "name": "wechatoa-workflow",
-   "version": "1.2.3",
+   "version": "1.2.4",
    "path": "skills/wechatoa-workflow",
    "minCliVersion": "0.6.22",
    "description": "公众号图文文章工作流：MD+assets 配图 → article import(--cover)/prepare/preview/publish 五命令一条链（压缩定版/幂等发布/失败处置）",
@@ -61,7 +61,7 @@
     "SKILL.md"
    ],
    "sha256": {
-    "SKILL.md": "0b9171ce15b02dc574027832a418d8238ac08b972f053a77abb9b7d52dfba3ea"
+    "SKILL.md": "95de08e043085d3baac5561cded7e8bbfa0036930dd1c657756c765462bda1b3"
    },
    "cli_commands": [
     "as wechatoa article import",
@@ -73,7 +73,7 @@
   },
   {
    "name": "sheaf-workflow",
-   "version": "1.0.3",
+   "version": "1.0.7",
    "path": "skills/sheaf-workflow",
    "minCliVersion": "0.6.36",
    "description": "内容创作编排工作流：收藏→选题→母稿→变体→资产→投递→平台读回核验 sheaf 全链路（含 full-journey 一键脚本；v2 读回核验=wechatoa article import+reconcile 平台快照核对）",
@@ -82,8 +82,8 @@
     "scripts/full-journey.sh"
    ],
    "sha256": {
-    "SKILL.md": "e4bf5d7fe08209035ba119ac44a3ed1bb023a481e37aa5f3528977987455a074",
-    "scripts/full-journey.sh": "635a2d72670f752536dad59c711dfb78b4714ba525db16499396766491d2c322"
+    "SKILL.md": "ec28910c0827514904a87aa82cbf348d9f3f705e1a73089f5b4449dcacb2e51e",
+    "scripts/full-journey.sh": "80a34ad6ad4da8f28d77912f88c9711942e31d3790d5393339e80d958e59f830"
    },
    "cli_commands": [
     "as sheaf captures",

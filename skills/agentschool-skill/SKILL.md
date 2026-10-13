@@ -1,6 +1,6 @@
 ---
 name: agentschool-skill
-version: 0.9.27
+version: 0.9.28
 description: "让你的 AI 直接和 AgentSchool 对话 —— 一行命令搞定鉴权、查额度、调能力、写技术方案报告。当用户想把 AgentSchool 接入 Agent 流程、做 Demo、或为 Agent 找可商用的技术能力时使用本技能。"
 metadata:
   requires:
@@ -76,9 +76,9 @@ fetch_code 和完整 ApiKey 都是秘密，**没有 argv/env 入口**（进程�
 | `as tasks list/show/wait/cancel/tree` | 跨业务任务平台 |
 | `as wechatoa accounts/drafts/history/materials/covers` | 微信公众号工作台 |
 | `as wechatoa publish <md> --cover <图>` | 一键发布：MD+封面 → 服务端模板渲染 → 草稿箱（封面必传；`--template` 选模板；配图超 2MB 自动压缩） |
-| `as wechatoa article import/update/prepare/preview/publish` | 图文分步编排（编辑/压缩定版/预览；publish 需 `--cover` 必传，同走统一发布） |
+| `as wechatoa article list/get/import/update/prepare/preview/publish` | 图文分步编排：list/get 只读查询（get 含本地实算正文 sha256）；import 支持 `--cover-logical-path` 冻结封面路径；publish 需 `--cover` |
 | `as wechatoa template list/save/delete/default` | 排版模板库——list 动态展示系统模板（◆ 直接引用）+ 我的模板（★）；发布 `--template <名>` 引用 |
-| `as sheaf` | 内容创作编排（收藏→选题→母稿→变体→资产→投递→回执十域命令） |
+| `as sheaf` | 内容创作编排：captures/sources/accounts(+profiles)/topics/projects/master/variants/assets/deliveries 十域（+skills 辅助）；投递=reconcile 读回核验 |
 | `as skills list/install/update` | 技能分发 |
 | `as doctor` | 环境、网络和凭据自检 |
 
@@ -101,6 +101,12 @@ as files upload video.mp4 --purpose mint.source_video
 as tasks list --service mint --limit 10
 as --help  # 先核实 wechatoa 命令已注册后再调用
 ```
+
+## 交稿读回核验（sheaf deliveries reconcile）
+
+- 成功判据=`status=synced` + `articleId` + 非空 `verification`（method/attemptId/checkedAt/contentVersion 四字段）——文章读回核验成功**不等于**已发布到公众号。
+- 材料差异（title/markdownSha256/asset/cover）→ `failed/evidence_mismatch` 白名单诊断；依赖故障 → `unknown`（不判账号死亡）；重复键 409 → 换新 `--client-request-id`。
+- 只读重核：`as sheaf deliveries reconcile <id> --client-request-id <新键>`（省略回执参数）——零平台写、不重复交稿；旧 synced 吸收态回显原核验摘要。
 
 ## 安全规则
 

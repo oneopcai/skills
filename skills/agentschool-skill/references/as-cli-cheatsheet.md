@@ -27,7 +27,7 @@
 | `as wechatoa article publish <rid> --cover <图>` | 发布定版 revision（内部走统一端点；封面必传） |
 | `as wechatoa template list` | 查看全部可选模板（系统模板 ◆ + 我的模板 ★） |
 | `as wechatoa template save/delete/default` | 自定义模板管理 |
-| `as sheaf` | 内容创作编排十域：captures/topics/masters/variants/assets/briefs/deliveries/receipts/skill |
+| `as sheaf` | 内容创作编排：captures/sources/accounts(+profiles)/topics/projects/master/variants/assets/deliveries（+skills 辅助）|
 
 配图/封面超 2MB 不再是调用方约束：服务端 image 链自动压缩（正文 wechat-content / 封面 wechat-cover 预设，预算均 1.8MB）；压缩服务不可达/压缩失败按 503/502 报错，凭据链未放行（workload grant 缺失）按 403 报错——均不静默降级。
 
@@ -46,3 +46,5 @@
 
 账号会话由 OAuth2 授权链签发（浏览器 PKCE 或 CLI 邮箱验证码两步流，两种登录方式）；第三方委托与 `client_credentials` 仍是架构目标，当前不提供其教程。
 
+
+| `as wechatoa article list/get` | 文章只读查询：列表（total 可 null）/详情（标题/版本/资产 logicalPath+sourceSha256/封面+本地实算正文 sha256） |

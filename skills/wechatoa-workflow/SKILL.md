@@ -1,6 +1,6 @@
 ---
 name: wechatoa-workflow
-version: 1.2.3
+version: 1.2.4
 description: "公众号图文发布工作流 skill —— Agent 产出标准含图 Markdown 与封面后，as wechatoa publish 一键发布到草稿箱（服务端模板渲染+封面必传）；需要分步编辑/预览/定版时用 as wechatoa article 命令组，发布统一走 as wechatoa publish 或 article publish --cover。当用户要『发图文到公众号』『一键发布 MD』『排版模板』『预览/发布 revision』时使用本技能。"
 metadata:
   requires:
@@ -9,7 +9,7 @@ metadata:
   cliHelp: "as wechatoa publish --help"
   projectHome: "https://agentschool.me"
   scopeList:
-    - article: 图文文章（MD+assets → 文章 → 不可变 revision）
+    - article: 图文文章（list/get 只读查询；MD+assets → 文章 → 不可变 revision；import --cover-logical-path）
     - assets: 配图资产（logicalPath 归一化，MD 图片节点定顺序）
     - preparations: 准备（压缩配图，accepted 异步自动轮询）
     - revisions: 不可变定版（canonical fragment、preview 只读投影）

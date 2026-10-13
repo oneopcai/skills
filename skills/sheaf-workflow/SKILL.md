@@ -1,6 +1,6 @@
 ---
 name: sheaf-workflow
-version: 1.0.3
+version: 1.0.7
 description: "内容创作全旅程 skill —— 从收藏素材到公众号文章落库一条链：收藏→选题→项目→母稿确认→账号稿变体→封面/正文图资产集合→投递意图 prepare→终稿 MD+图集交 wechatoa 文章域（article import）→reconcile 平台读回核验（synced=核验时点事实一致）。当用户要『把这篇素材做成公众号文章』『走一遍 sheaf 创作流程』『从链接到文章』时使用本技能。"
 metadata:
   requires:
@@ -22,11 +22,11 @@ metadata:
 
 # Sheaf 内容创作工作流（收藏 → 公众号文章落库 + 读回核验）
 
-`as sheaf` 命令组来自 npm 包 `@oneopcai/agentschool-cli`（≥0.6.20）。本技能把
+`as sheaf` 命令组来自 CLI `@oneopcai/agentschool-cli`（≥0.6.38；可使用经核验的本地包）。本技能把
 sheaf（内容编排）与 wechatoa（公众号平台）组合成一条完整旅程：**素材进 →
 文章落库+读回核验 synced**，每一步幂等可重试、中断可续。
-发布到微信公众号草稿箱是 wechatoa 侧的独立动作（`as wechatoa article prepare/publish`），
-不在本旅程终点。
+发布到微信公众号草稿箱是 wechatoa 侧的独立动作：先 `as wechatoa article prepare
+<articleId>` 生成 revision，再 `as wechatoa article publish <revisionId>`，不在本旅程终点。
 
 ## 核心概念（先读）
 
@@ -37,8 +37,9 @@ sheaf（内容编排）与 wechatoa（公众号平台）组合成一条完整旅
 - **幂等键**：写操作带 `--client-request-id`（或 `--idempotency-key`）——网络
   重试同键返回原结果；不传则每次生成新键（不可跨次重试）。
 - **投递三段式**：`deliveries prepare`（sheaf 固定 payload+资产+账号）→
-  `as wechatoa publish --file <html>`（HTML 直发，带 `--intent-id` + `--idempotency-key`）
-  → `deliveries reconcile`（提交回执，**服务端核对后才 synced**；unknown=安全
+  `as wechatoa article import`（终稿 MD+图集交 wechatoa 文章域：建文+资产上传，
+  封面走 `--cover`+`--cover-logical-path` 完整冻结路径）→ `deliveries reconcile`
+  （提交 article_receipt 回执，**服务端读回平台快照核对后才 synced**；unknown=安全
   降级，勿盲目重新建稿）。
 - **账号边界**：平台账号（公众号）增删改在 wechatoa 工作台；sheaf 只读画像。
 
@@ -47,6 +48,7 @@ sheaf（内容编排）与 wechatoa（公众号平台）组合成一条完整旅
 ```bash
 as +me                      # 已登录（未登录先 as +connect 或 as auth login）
 as wechatoa accounts list   # 拿目标公众号 account-id（UUID）
+as wechatoa article list --limit 20 --offset 0  # 只读列表；JSON 含可见文章 total（可 null）
 ```
 
 ## 完整旅程（八步）
@@ -72,13 +74,20 @@ as sheaf master confirm --project-id <projectId> --if-match N --json
 # → masterVersionId
 
 # 5. 变体（目标=serviceCode,账号ID；画像缺省用当前版本）
+#    图片引用必须在确认变体版本之前写进正文（assets/<文件名>；文件名含空格
+#    用 ![配图](<assets/文件 名>) 包裹形态）——冻结后不再改正文，冻结
+#    contentSha256 覆盖的就是这份含图引用的终稿字节
 as sheaf variants create --project-id <projectId> --master-version-id <masterVersionId> \
   --target wechatoa,<accountId> --target-platform wechat_oa --content-kind article --json
 # → variantId + accountProfileVersionId
 as sheaf variants version --variant-id <variantId> \
-  --content-md "# 账号稿正文（按画像改写）…" \
+  --content-md "# 冻结标题（H1=标题原值）
+
+正文…
+
+![配图](assets/body.png)" \
   --master-version-id <masterVersionId> --profile-version-id <accountProfileVersionId> \
-  --content-kind article --title "..." --json
+  --content-kind article --title "<同一冻结标题>" --json
 # → variantVersionId（confirmed，可投递）
 
 # 6. 资产集合：上传图片到 Files → set 建 revision 1 → reorder 挂图
@@ -105,20 +114,36 @@ as files download <coverFileId> --output assets/<原文件名>   # 文件名=原
 # 8. 交稿 wechatoa 文章域（终稿 MD+图集 → article import 建文+资产上传）→ 回执核对
 #    v2 证据唯一形态=article_receipt（文章创建+资产上传结果；发布状态在
 #    wechatoa 侧查询——as wechatoa article prepare/preview/publish，sheaf 只到核对）
-#    MD 引用 ![配图](assets/<名>) 按顺序对位 content 槽；封面走 --cover
+#    第一个 wechatoa 写操作前：本地实算正文 SHA256 必须等于冻结 contentSha256，
+#    不同即零写退出；图集按完整冻结 logicalPath 对位（不按下标/basename 串配），
+#    同路径不同字节在首写前拒绝，封面兼正文图复用同 assetId
 as wechatoa article import article.md --assets <文章根目录> --cover assets/<封面文件> \
-  --account-id <delivery.accountId> --json
+  --cover-logical-path assets/<封面文件> --account-id <delivery.accountId> --json
 # → articleId / assets[{logicalPath,assetId}] / coverAssetId
+# 标题对齐是防御性保留：正常 sheaf 冻结链已 trim 标题，通常不触发本分支；
+# 不能据此假设所有独立/历史文章标题都已 trim，三方仍精确比较实际完整值。
+# 比较锚点是 delivery.renderedContent.title（冻结完整值）；平台实际标题与报告
+# 标题分别对比它。例如冻结="标题"、平台="  标题  "，仅改回执标题仍失败。
+# 不能一概认定带空白的历史文章失败，须看该投递的冻结值是否与实际值一致。
+# 实际标题不一致时在交稿阶段按冻结完整值对齐，或建新版本/新投递；重核零回写。
+# 正文 H1=冻结标题（import 按 H1 推导、首尾空白会被 trim）；冻结
+# 标题含首尾空格时用 article update 按冻结原值 PATCH（仅交稿期；重核零回写）：
+as wechatoa article update <articleId> --title "<冻结标题原值>" --json
 as sheaf deliveries reconcile --delivery-id <delivery.id> \
   --article-id <articleId> --title "<冻结标题>" --markdown-sha256 <变体版本 contentSha256> \
   --asset slot=cover,logical-path=assets/<封面名>,asset-id=<coverAssetId>,sha256=<文件哈希> \
   --asset slot=content,logical-path=assets/<配图名>,asset-id=<assetId>,sha256=<文件哈希> --json
-# → synced（服务端读回 wechatoa 平台实际快照核对通过——标题/正文哈希/资产逐位）；
+# asset-id=article import 返回的文章域 assetId；封面用 coverAssetId，绝不能用
+# payloadAssets[].fileId / Files 上传 fileId 代替。sha256=源图字节，禁 preparedSha256。
+# HTTP 200 ≠ 核验通过；failed 退出码为 1，unknown 可能退出 0。须解析 JSON，
+# 要求 synced + articleId + verification.method/attemptId/checkedAt/contentVersion 齐全。
+# → synced（服务端读回 wechatoa 平台实际快照核对通过——标题/正文哈希/资产逐位；
+#   完成门=status synced+articleId 为本次交稿 ID+verification 四字段齐备）；
 #   unknown=安全降级（读回暂不可得），稍后重跑 reconcile；
 #   failed=evidence_mismatch（证据与冻结材料不符——核对标题/哈希/资产对位）；
 #   failed=article_not_accessible（文章不存在/跨租户——检查 articleId）；
 #   unknown=article_verification_unavailable（内部服务故障——运维告警，非文章问题）
-# 只读重核形态（旧 synced 迁移后重核）：省略全部回执参数、仅带新 --client-request-id
+# 只读重核形态：省略全部回执参数、仅带新 --client-request-id（每次新生成）
 as sheaf deliveries reconcile --delivery-id <deliveryId> --client-request-id <新键> --json
 # → 不重复交稿、不动文章内容；结果 status + verification{method,attemptId,checkedAt,contentVersion}
 # 迁移旧态：errorCode=evidence_requires_readback=旧自报 synced 待新读回重核（非失败）
@@ -136,15 +161,17 @@ as sheaf deliveries reconcile --delivery-id <deliveryId> --client-request-id <�
 - 变体版本要改 → 新建版本（旧版不可变），**再对新版本 `assets set` + `reorder`
   重挂资产**（资产集按版本绑定不继承——不重挂则 prepare 冻结空资产集且同版本
   幂等锁死，补图只能再换版本），最后对新版本 prepare；
-- 已 synced 的意图再 reconcile → 服务端终态短路原样回显（不重核不覆写）；
-  要重核对/换稿走新变体版本 + 新投递意图。
+- 已 synced 且已具成功、身份匹配的官方账号证据 → 吸收，保留原 verification，
+  不代表刷新当前事实；缺官方证据的旧 synced 可用非空新 `--client-request-id`
+  只读补核，服务端恢复报告、读回并落新 attempt，按结果 synced/failed/unknown。
+  无键迟到报告仍吸收；摘要冲突/跨投递键拒绝优先。改稿走新变体版本+新投递。
 
 ## Skill 执行登记（可选但推荐）
 
 Agent 宿主执行本工作流时登记到 sheaf（聊天历史不当事实源）：
 
 ```bash
-as sheaf skills run --skill-id sheaf-workflow --manifest-version 1.0.1 \
+as sheaf skills run --skill-id sheaf-workflow --manifest-version 1.0.6 \
   --host <宿主名> --external-run-id <宿主run ID> --input-ref project:<projectId> --json
 # 每步完成后：
 as sheaf skills report --run-id <runId> --step-id <stepId> --attempt-index 1 \
@@ -157,10 +184,16 @@ as sheaf skills report --run-id <runId> --step-id <stepId> --attempt-index 1 \
 
 ```bash
 ./scripts/full-journey.sh --account <wechatoa账号UUID> \
-  [--url <素材链接>] [--title "标题"] [--cover cover.jpg] [--content-image body.png]
+  [--url <素材链接>] [--title "标题"] [--cover cover.jpg] [--content-image body.png] \
+  [--prepare-only]                       # 到 prepare 为止（未交稿、未核验——非 synced）
+./scripts/full-journey.sh --recheck-delivery-id <deliveryId>   # 只读重核（不需要 --account）
 ```
 
 脚本同样幂等：每次运行创建新选题/项目（标题带时间戳）；重复运行不互相干扰。
+退出码语义：0=旅程 synced（完成门全过；`--prepare-only` 的 0 仅表示已 prepare）；
+非零=未达成（含 unknown/failed/缺核验摘要——JSON 与恢复指引保留在 workdir）。
+图片引用在冻结前注入正文、冻结后零改写，资产按完整 logicalPath 对位并校验
+源哈希，这些门禁内建在脚本里，人工逐步执行时按第 5/8 步注释同样处理。
 
 ## 常见错误对照
 
@@ -171,3 +204,5 @@ as sheaf skills report --run-id <runId> --step-id <stepId> --attempt-index 1 \
 | assets reorder 409 | baseRevision 落后（已有新 revision） | `as sheaf assets set` 响应或重跑取最新 revision |
 | reconcile → unknown | East-West 回执未到/超时 | 安全降级：稍后重跑 reconcile；勿盲目再次建稿 |
 | prepare 200（非 201） | 同业务唯一键返回原意图 | 正常幂等语义，用返回的意图继续 |
+| 正文 SHA 校验失败 | 冻结后正文被改动/取回不一致 | 零写退出是保护：新建变体版本重新走链，不改冻结材料 |
+| 同路径不同字节拒绝 | 两张图同名但内容不同（文件名碰撞） | 改名其一后重传，再走资产挂载与 prepare |
