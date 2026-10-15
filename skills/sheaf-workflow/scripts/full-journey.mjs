@@ -88,6 +88,12 @@ export function resolveCliEntry(env = process.env, platform = process.platform) 
 
 export function cliInvocation(entry, args) { return { executable: process.execPath, args: [entry, ...args], options: { shell: false } }; }
 function hash(bytes) { return createHash('sha256').update(bytes).digest('hex'); }
+export function defaultTitle(date = new Date()) {
+  const pad = value => String(value).padStart(2, '0');
+  const offset = -date.getTimezoneOffset();
+  const zone = `${offset >= 0 ? '+' : '-'}${pad(Math.floor(Math.abs(offset) / 60))}:${pad(Math.abs(offset) % 60)}`;
+  return `sheaf 旅程 ${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())} UTC${zone}`;
+}
 function required(value, label) {
   if (value === null || value === undefined || value === '') throw new WorkflowError(`响应缺少 ${label}`);
   return value;
@@ -157,7 +163,7 @@ export function runJourney(argv, { stderr = process.stderr, stdout = process.std
       log('只读重核返回 synced（以上为返回摘要的核验时点；官方证据吸收保留旧 attempt，历史补核可产生新 attempt，请与重核前摘要比较）');
       return 0;
     }
-    const title = o.title || `sheaf 旅程 ${new Date().toISOString()}`;
+    const title = o.title || defaultTitle();
     const cover = o.cover ? path.resolve(o.cover) : path.join(workdir, 'cover.png');
     if (!o.cover) fs.writeFileSync(cover, Buffer.from(PNG, 'base64'));
     const images = o.images.length ? o.images.map(p => path.resolve(p)) : [path.join(workdir, 'content-1.png')];
@@ -183,31 +189,41 @@ export function runJourney(argv, { stderr = process.stderr, stdout = process.std
     log('1/8 收藏素材');
     const capture = asj('capture', ['sheaf', 'captures', 'add', '--url', o.url, '--client-request-id', `${run}-cap`]);
     const source = required(capture.capture?.sourceId, 'capture.sourceId');
+    log(`✓ captureId=${capture.capture?.id ?? '-'} sourceId=${source}`);
     log('2/8 选题与评估');
     const topic = required(asj('topic', ['sheaf', 'topics', 'create', '--title', title, '--source-ids', source]).id, 'topic.id');
+    log(`✓ topicId=${topic}`);
     asj('assess', ['sheaf', 'topics', 'assess', topic, '--rule-version', 'v1', '--score', '85']);
     log('3/8 创建项目');
     const project = required(asj('project', ['sheaf', 'projects', 'create', '--topic-id', topic, '--title', title]).id, 'project.id');
+    log(`✓ projectId=${project}`);
     log('4/8 母稿编辑与确认');
     const masterFile = path.join(workdir, 'master.md');
     fs.writeFileSync(masterFile, `# ${title}\n\n素材链接：${o.url}\n\n## 正文\n\n这是经 sheaf 工作流生成的母稿正文。确认后固化为不可变版本，\n变体在此基础上按账号画像改写。\n`);
     const draft = asj('master-edit', ['sheaf', 'master', 'edit', '--project-id', project, '--title', title, '--content-file', masterFile, '--if-match', '0']);
-    const master = required(asj('master-confirm', ['sheaf', 'master', 'confirm', '--project-id', project, '--if-match', String(required(draft.draftVersion, 'draftVersion')), '--idempotency-key', `${run}-mc`]).id, 'master.id');
+    const draftVersion = required(draft.draftVersion, 'draftVersion');
+    log(`✓ draftVersion=${draftVersion}`);
+    const master = required(asj('master-confirm', ['sheaf', 'master', 'confirm', '--project-id', project, '--if-match', String(draftVersion), '--idempotency-key', `${run}-mc`]).id, 'master.id');
+    log(`✓ masterVersionId=${master}`);
     log('5/8 变体与账号稿');
     const variant = asj('variant', ['sheaf', 'variants', 'create', '--project-id', project, '--master-version-id', master, '--target', `wechatoa,${o.account}`, '--target-platform', 'wechat_oa', '--content-kind', 'article']);
     const variantId = required(variant.id, 'variant.id');
+    log(`✓ variantId=${variantId}`);
     const variantFile = path.join(workdir, 'variant.md');
     const refs = images.map(p => { const ref = `assets/${path.basename(p)}`; return /[\s()]/.test(ref) ? `![配图](<${ref}>)` : `![配图](${ref})`; });
     fs.writeFileSync(variantFile, `# ${title}\n\n母稿版本 ${master} 按账号画像改写后的账号稿：标题更抓人、段落更短、口语化收尾引导在看/转发。\n${refs.map(x => `\n${x}\n`).join('')}`);
     const version = required(asj('variant-version', ['sheaf', 'variants', 'version', '--variant-id', variantId, '--content-file', variantFile, '--title', title, '--master-version-id', master, '--profile-version-id', required(variant.accountProfileVersionId, 'accountProfileVersionId'), '--content-kind', 'article', '--client-request-id', `${run}-vv`]).id, 'variantVersion.id');
+    log(`✓ variantVersionId=${version}`);
     log('6/8 资产集合');
     const coverId = required(asj('upload-cover', ['files', 'upload', cover, '--purpose', 'general.image']).file_id, 'cover.file_id');
     const contentIds = images.map((p, i) => required(asj(`upload-content-${i + 1}`, ['files', 'upload', p, '--purpose', 'general.image']).file_id, 'image.file_id'));
     const aset = asj('assets-set', ['sheaf', 'assets', 'set', '--variant-id', variantId, '--variant-version-id', version]);
-    asj('assets-reorder', ['sheaf', 'assets', 'reorder', '--variant-id', variantId, '--asset-set-id', required(aset.id, 'assetSet.id'), '--base-revision', String(required(aset.revision, 'revision')), ...[coverId, ...contentIds].flatMap((id, i) => ['--item', `${i === 0 ? 'cover' : 'content'},file=${id},purpose=general.image`])]);
+    const orderedAssets = asj('assets-reorder', ['sheaf', 'assets', 'reorder', '--variant-id', variantId, '--asset-set-id', required(aset.id, 'assetSet.id'), '--base-revision', String(required(aset.revision, 'revision')), ...[coverId, ...contentIds].flatMap((id, i) => ['--item', `${i === 0 ? 'cover' : 'content'},file=${id},purpose=general.image`])]);
+    log(`✓ assetSetId=${aset.id} revision=${orderedAssets.revision ?? '-'}`);
     log('7/8 投递意图 prepare');
     const delivery = asj('delivery', ['sheaf', 'deliveries', 'prepare', '--variant-version-id', version]);
     deliveryId = required(delivery.id, 'delivery.id');
+    log(`✓ deliveryId=${deliveryId}`);
     const contentRef = required(delivery.renderedContent?.contentRef, 'contentRef');
     const articleTitle = required(delivery.renderedContent?.title, 'frozen title');
     const versions = asj('variant-versions', ['sheaf', 'variants', 'list', '--variant-id', variantId]);
@@ -218,7 +234,12 @@ export function runJourney(argv, { stderr = process.stderr, stdout = process.std
     fs.writeFileSync(path.join(workdir, 'article.md'), bytes);
     fs.writeFileSync(path.join(workdir, 'content.sha256'), frozen.contentSha256);
     if (hash(bytes) !== frozen.contentSha256) throw new WorkflowError('正文完整性校验失败；冻结 SHA 与原始字节不符，零平台写退出');
-    if (o.prepareOnly) { log('完成（--prepare-only：已冻结材料；未交稿、未 reconcile，本终点不是 synced）'); return 0; }
+    log(`✓ contentRef=${contentRef} markdownSha256=${frozen.contentSha256} assetSetRevision=${delivery.assetSetRevision ?? '-'}`);
+    const resources = `topicId=${topic} projectId=${project} masterVersionId=${master} variantVersionId=${version} deliveryId=${deliveryId}`;
+    if (o.prepareOnly) {
+      log(`冻结材料：${resources} workdir=${workdir}`);
+      log('完成（--prepare-only：已冻结材料；未交稿、未 reconcile，本终点不是 synced）'); return 0;
+    }
     log('8/8 wechatoa 文章域交稿与回执核对');
     const articleRoot = path.join(workdir, 'article-root');
     fs.mkdirSync(path.join(articleRoot, 'assets'), { recursive: true });
@@ -236,6 +257,7 @@ export function runJourney(argv, { stderr = process.stderr, stdout = process.std
     });
     const imported = asj('import', ['wechatoa', 'article', 'import', path.join(articleRoot, 'article.md'), '--assets', articleRoot, '--cover', path.join(articleRoot, 'assets', path.basename(cover)), '--cover-logical-path', `assets/${path.basename(cover)}`, '--account-id', o.account]);
     const article = required(imported.articleId, 'import.articleId');
+    log(`✓ articleId=${article}`);
     if (/^\s|\s$/.test(articleTitle)) asj('title-align', ['wechatoa', 'article', 'update', article, '--title', articleTitle]);
     const byPath = new Map((imported.assets || []).map(a => [a.logicalPath, a.assetId]));
     const evidence = slots.map(s => {
@@ -245,7 +267,7 @@ export function runJourney(argv, { stderr = process.stderr, stdout = process.std
     fs.writeFileSync(path.join(workdir, 'evidence-assets.txt'), evidence.join('\n') + '\n');
     const reconciled = asj('reconcile', ['sheaf', 'deliveries', 'reconcile', '--delivery-id', deliveryId, '--article-id', article, '--title', articleTitle, '--markdown-sha256', frozen.contentSha256, ...evidence.flatMap(e => ['--asset', e])]);
     showVerification(checkResult(reconciled, article));
-    log(`旅程完成：synced，articleId=${article} deliveryId=${deliveryId} workdir=${workdir}`);
+    log(`旅程完成：synced，${resources} articleId=${article} workdir=${workdir}`);
     return 0;
   } catch (error) {
     log(`✗ ${error.message}`);

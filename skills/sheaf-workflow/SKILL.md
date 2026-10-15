@@ -1,6 +1,6 @@
 ---
 name: sheaf-workflow
-version: 1.0.10
+version: 1.0.11
 description: "内容创作全旅程 skill —— 从收藏素材到公众号文章落库一条链：收藏→选题→项目→母稿确认→账号稿变体→封面/正文图资产集合→投递意图 prepare→终稿 MD+图集交 wechatoa 文章域（article import）→reconcile 平台读回核验（synced=核验时点事实一致）。当用户要『把这篇素材做成公众号文章』『走一遍 sheaf 创作流程』『从链接到文章』时使用本技能。"
 metadata:
   requires:
@@ -175,7 +175,7 @@ as sheaf deliveries reconcile --delivery-id <deliveryId> --client-request-id <�
 Agent 宿主执行本工作流时登记到 sheaf（聊天历史不当事实源）：
 
 ```bash
-as sheaf skills run --skill-id sheaf-workflow --manifest-version 1.0.10 \
+as sheaf skills run --skill-id sheaf-workflow --manifest-version 1.0.11 \
   --host <宿主名> --external-run-id <宿主run ID> --input-ref project:<projectId> --json
 # 每步完成后：
 as sheaf skills report --run-id <runId> --step-id <stepId> --attempt-index 1 \
@@ -193,6 +193,7 @@ node scripts/full-journey.mjs --recheck-delivery-id <deliveryId>
 ```
 
 以上入口不使用 Shell 续行符。更多参数见 `node scripts/full-journey.mjs --help`。
+省略 `--title` 时使用执行机器的本地时间并明确标注 UTC 偏移；显式标题保持原样。终端在资源创建成功后打印对应 ID，结束时汇总选题、项目、母稿版本、变体版本和投递 ID；中途失败可结合已输出的 ID 与 workdir 恢复，不重复建文。
 本版已在 Windows 实机与 Linux Node 22 容器验证；macOS 安装布局已模拟验证，实际 macOS runner 尚未执行，不将模拟称为实测。
 
 全旅程在首个内容写入之前执行所选账号的官方预检，最终 reconcile 仍核验冻结账号，预检不替代最终判定。
