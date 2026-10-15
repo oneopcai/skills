@@ -1,6 +1,6 @@
 ---
 name: sheaf-workflow
-version: 1.0.9
+version: 1.0.10
 description: "内容创作全旅程 skill —— 从收藏素材到公众号文章落库一条链：收藏→选题→项目→母稿确认→账号稿变体→封面/正文图资产集合→投递意图 prepare→终稿 MD+图集交 wechatoa 文章域（article import）→reconcile 平台读回核验（synced=核验时点事实一致）。当用户要『把这篇素材做成公众号文章』『走一遍 sheaf 创作流程』『从链接到文章』时使用本技能。"
 metadata:
   requires:
@@ -175,23 +175,25 @@ as sheaf deliveries reconcile --delivery-id <deliveryId> --client-request-id <�
 Agent 宿主执行本工作流时登记到 sheaf（聊天历史不当事实源）：
 
 ```bash
-as sheaf skills run --skill-id sheaf-workflow --manifest-version 1.0.9 \
+as sheaf skills run --skill-id sheaf-workflow --manifest-version 1.0.10 \
   --host <宿主名> --external-run-id <宿主run ID> --input-ref project:<projectId> --json
 # 每步完成后：
 as sheaf skills report --run-id <runId> --step-id <stepId> --attempt-index 1 \
   --status-claim succeeded --outputs-ref <产物引用>
 ```
 
-## 一键脚本
+## 一键脚本（Node.js 跨平台入口）
 
-`scripts/full-journey.sh` 把上述八步串成可独立执行的脚本（不依赖宿主）：
+`scripts/full-journey.mjs` 把上述八步串成可独立执行的 Node.js 脚本，仅依赖 Node >=22 与已安装的 CLI；不需要 Bash/WSL/Git Bash 或 Python：
 
-```bash
-./scripts/full-journey.sh --account <wechatoa账号UUID> \
-  [--url <素材链接>] [--title "标题"] [--cover cover.jpg] [--content-image body.png] \
-  [--prepare-only]                       # 到 prepare 为止（未交稿、未核验——非 synced）
-./scripts/full-journey.sh --recheck-delivery-id <deliveryId>   # 只读重核（不需要 --account）
+```text
+node scripts/full-journey.mjs --account <wechatoa账号UUID> --title "标题" --cover cover.jpg --content-image body.png
+node scripts/full-journey.mjs --account <wechatoa账号UUID> --prepare-only
+node scripts/full-journey.mjs --recheck-delivery-id <deliveryId>
 ```
+
+以上入口不使用 Shell 续行符。更多参数见 `node scripts/full-journey.mjs --help`。
+本版已在 Windows 实机与 Linux Node 22 容器验证；macOS 安装布局已模拟验证，实际 macOS runner 尚未执行，不将模拟称为实测。
 
 全旅程在首个内容写入之前执行所选账号的官方预检，最终 reconcile 仍核验冻结账号，预检不替代最终判定。
 `--prepare-only` 不做官方探测；`--recheck-delivery-id` 仅核对同一投递，不上传/建文/改文/发布，服务端可以记录核验 attempt/审计。
