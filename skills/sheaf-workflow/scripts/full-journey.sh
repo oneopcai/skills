@@ -31,19 +31,37 @@
 #                          本终点不是 synced）
 #   --recheck-delivery-id <id>
 #                          只读重核模式：仅调用 reconcile（省略回执、新
-#                          clientRequestId 由脚本生成），不创建任何 sheaf 记录、
-#                          不上传 Files、不 import/update/publish。
+#                          clientRequestId 由脚本生成），不创建新内容/投递意图、
+#                          不上传 Files、不 import/update/publish；服务端可记核验 attempt/审计。
 #
 # 完成门（退出码 0 的唯一形态，--prepare-only 除外）：status=synced、返回
 # articleId 等于本次交稿 ID、verification.method=wechatoa_article_readback、
 # attemptId/checkedAt（带时区）/contentVersion（正整数）齐备。unknown/failed/
 # 无核验摘要一律非零退出（JSON 与恢复指引保留，安全降级不当旅程成功）。
 #
-# 依赖：as（@oneopcai/agentschool-cli ≥0.6.36）已登录；node ≥22（JSON 提取）。
+# 依赖：as（@oneopcai/agentschool-cli ≥0.6.38）已登录；node ≥22（JSON 提取）。
 # 幂等性：每次运行创建新选题/项目（标题带时间戳）；写操作幂等键带运行序号，
 # 同一次运行内重试安全。
 # =============================================================================
 set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+用法：full-journey.sh --account <wechatoa账号UUID> [选项]
+      full-journey.sh --recheck-delivery-id <投递UUID> [--workdir <dir>]
+  --account <uuid>       目标公众号 ID；全旅程先官方验证，不自动换默认号
+  --url <url>            素材链接
+  --title <title>        文章标题
+  --cover <file>         封面图 jpg/png
+  --content-image <file> 正文图；可多次
+  --workdir <dir>        保留 JSON / stderr / exit-code 及续接材料
+  --prepare-only        仅冻结材料；未探测官方账号、未交稿、未核验，非 synced
+  --recheck-delivery-id <id>
+                        仅 reconcile；不上传、不 import/update/publish
+  --help / -h           显示帮助
+依赖：CLI >=0.6.38，Node >=22。微信草稿箱发布属于独立动作。
+USAGE
+}
 
 # ── 参数解析 ────────────────────────────────────────────────────────────────
 ACCOUNT=""
@@ -64,7 +82,7 @@ while [ $# -gt 0 ]; do
     --workdir) WORKDIR="$2"; shift 2 ;;
     --prepare-only) PREPARE_ONLY=1; shift ;;
     --recheck-delivery-id) RECHECK_DELIVERY_ID="${2:?}"; shift 2 ;;
-    -h|--help) sed -n '19,36p' "$0" >&2; exit 0 ;;
+    -h|--help) usage; exit 0 ;;
     *) echo "✗ 未知参数：$1（--help 查看用法）" >&2; exit 2 ;;
   esac
 done
@@ -76,6 +94,19 @@ if [ -z "$ACCOUNT" ] && [ -z "$RECHECK_DELIVERY_ID" ]; then
   echo "✗ 缺少 --account <wechatoa账号UUID>（as wechatoa accounts list 的 ID 列；只读重核用 --recheck-delivery-id，不需要账号）" >&2
   exit 2
 fi
+if [ -n "$ACCOUNT" ] && [[ ! "$ACCOUNT" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]; then
+  echo "✗ --account 须为 accounts list 返回的 UUID" >&2
+  exit 2
+fi
+command -v node >/dev/null && command -v as >/dev/null || { echo "✗ 需要 Node >=22 与 CLI >=0.6.38" >&2; exit 1; }
+CLI_VERSION="$(as --version)"
+node -e '
+  const s=process.argv[1].trim(), m=/^v?(\d+)\.(\d+)\.(\d+)$/.exec(s);
+  const p=m?.slice(1).map(Number);
+  if(Number(process.versions.node.split(".")[0])<22 || !p || !(p[0]>0 || p[1]>6 || (p[1]===6 && p[2]>=38))){
+    console.error("✗ 需要 CLI >=0.6.38、Node >=22；当前 CLI="+s); process.exit(1);
+  }
+' "$CLI_VERSION"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 RUN="sheaf-${STAMP}-$$"
 if [ -z "$TITLE" ] && [ -z "$RECHECK_DELIVERY_ID" ]; then TITLE="sheaf 旅程 ${STAMP}"; fi
@@ -94,20 +125,32 @@ jget() {
       console.log(typeof out==='object'?JSON.stringify(out):out);
     });" "$expr"
 }
-# 运行 as --json 并落盘原始输出（排障用）；失败即停（错误信息由 as 打印）
+# 运行 as --json：非零退出也先保留 stdout JSON、stderr 与真实退出码。
 # 用法：asj <标签> <as 子命令与参数...>（如 asj step1 sheaf captures add --url ...）
 asj() {
   local tag="$1"; shift
-  local out
-  if ! out="$(as --json "$@" 2>"${WORKDIR}/${tag}.err")"; then
+  local rc=0
+  as --json "$@" >"${WORKDIR}/${tag}.json" 2>"${WORKDIR}/${tag}.err" || rc=$?
+  printf '%s\n' "$rc" >"${WORKDIR}/${tag}.exit-code"
+  if [ "$rc" -ne 0 ]; then
     cat "${WORKDIR}/${tag}.err" >&2
-    echo "✗ 步骤失败：${tag}（stderr 存于 ${WORKDIR}/${tag}.err）" >&2
-    exit 1
+    node -e '
+      try {
+        const d=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));
+        console.error("✗ status="+(d.status??"-")+" errorCode="+(d.errorCode??"-")+" articleId="+(d.articleId??"-"));
+        if(d.errorCode==="target_account_not_accessible") console.error("  文章可能已落库；冻结公众号不可访问，整体投递未成功。修复账号后重核同一投递，不重复 import。");
+      } catch { /* Raw stdout/stderr remain on disk, including transport errors. */ }
+    ' "${WORKDIR}/${tag}.json" >&2
+    echo "✗ 步骤失败：${tag}，exit=${rc}；JSON/stderr/exit-code 存于 ${WORKDIR}/${tag}.*" >&2
+    local did="${DELIVERY_ID:-${RECHECK_DELIVERY_ID:-}}"
+    if [ -n "$did" ]; then fail_guidance "$did"; fi
+    return "$rc"
   fi
-  printf '%s' "$out" > "${WORKDIR}/${tag}.json"
-  printf '%s' "$out"
+  cat "${WORKDIR}/${tag}.json"
 }
-sha256_of() { sha256sum "$1" | cut -d' ' -f1; }
+sha256_of() {
+  node -e 'const fs=require("fs"),c=require("crypto");console.log(c.createHash("sha256").update(fs.readFileSync(process.argv[1])).digest("hex"));' "$1"
+}
 uuid() { node -e 'console.log(crypto.randomUUID())'; }
 
 # 完成门（公共契约 §五）：$1=reconcile JSON 文件；$2=期望 articleId（空=只读
@@ -139,7 +182,7 @@ check_result() {
 # 完成门失败的统一恢复指引：$1=deliveryId
 fail_guidance() {
   echo "  排查：as sheaf deliveries get $1" >&2
-  echo "  只读重核（零回写）：as sheaf deliveries reconcile --delivery-id $1 --client-request-id <新生成键>" >&2
+  echo "  只读重核（零平台写，可记录核验 attempt/审计）：as sheaf deliveries reconcile --delivery-id $1 --client-request-id <新生成键>" >&2
   echo "  原始 JSON 与全部中间产物见 workdir" >&2
 }
 
@@ -189,6 +232,18 @@ log "sheaf 全旅程开始（workdir=${WORKDIR}）"
 log "0/8 登录与账号自检"
 as +me > /dev/null 2>&1 || { echo "✗ 未登录：先 as +connect 或 as auth login" >&2; exit 1; }
 step "已登录"
+if [ "$PREPARE_ONLY" = 0 ]; then
+  asj account-verify wechatoa accounts verify "$ACCOUNT" > /dev/null
+  node -e '
+    const d=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));
+    if(d.ok!==true){
+      console.error("✗ 目标公众号未通过官方连通性预检：reason="+(d.reason??"unavailable")+" errcode="+(d.errcode??"-"));
+      console.error("  确认该账号为本人可访问的真实公众号；占位测试号不可用。超时/限流/白名单问题恢复后再试；尚未创建内容、上传或交稿。");
+      process.exit(1);
+    }
+  ' "${WORKDIR}/account-verify.json"
+  step "目标公众号官方预检通过（最终 reconcile 仍按冻结账号再次核验）"
+fi
 
 # ── 1. 收藏素材 ─────────────────────────────────────────────────────────────
 log "1/8 收藏素材"

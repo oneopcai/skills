@@ -1,6 +1,6 @@
 ---
 name: sheaf-workflow
-version: 1.0.8
+version: 1.0.9
 description: "内容创作全旅程 skill —— 从收藏素材到公众号文章落库一条链：收藏→选题→项目→母稿确认→账号稿变体→封面/正文图资产集合→投递意图 prepare→终稿 MD+图集交 wechatoa 文章域（article import）→reconcile 平台读回核验（synced=核验时点事实一致）。当用户要『把这篇素材做成公众号文章』『走一遍 sheaf 创作流程』『从链接到文章』时使用本技能。"
 metadata:
   requires:
@@ -22,7 +22,7 @@ metadata:
 
 # Sheaf 内容创作工作流（收藏 → 公众号文章落库 + 读回核验）
 
-`as sheaf` 命令组来自 CLI `@oneopcai/agentschool-cli`（≥0.6.36；可使用经核验的本地包）。本技能把
+`as sheaf` 命令组来自 CLI `@oneopcai/agentschool-cli`（≥0.6.38；可使用经核验的本地包）。本技能把
 sheaf（内容编排）与 wechatoa（公众号平台）组合成一条完整旅程：**素材进 →
 文章落库+读回核验 synced**，每一步幂等可重试、中断可续。
 发布到微信公众号草稿箱是 wechatoa 侧的独立动作：先 `as wechatoa article prepare
@@ -47,9 +47,13 @@ sheaf（内容编排）与 wechatoa（公众号平台）组合成一条完整旅
 
 ```bash
 as +me                      # 已登录（未登录先 as +connect 或 as auth login）
-as wechatoa accounts list   # 拿目标公众号 account-id（UUID）
+as wechatoa accounts list   # 拿本人目标公众号 account-id（UUID），不必是默认账号
+as --json wechatoa accounts verify <accountId> # 必须 ok=true；占位号不可交稿
 as wechatoa article list --limit 20 --offset 0  # 只读列表；JSON 含可见文章 total（可 null）
 ```
+
+完整示例命令最低要求 CLI 0.6.38（含 article list/get）；整包安装及 --target 需 CLI 0.6.40。
+账号预检会访问微信官方接口，超时/限流/IP 白名单故障须恢复后再运行全旅程；不自动切换其他账号。
 
 ## 完整旅程（八步）
 
@@ -171,7 +175,7 @@ as sheaf deliveries reconcile --delivery-id <deliveryId> --client-request-id <�
 Agent 宿主执行本工作流时登记到 sheaf（聊天历史不当事实源）：
 
 ```bash
-as sheaf skills run --skill-id sheaf-workflow --manifest-version 1.0.6 \
+as sheaf skills run --skill-id sheaf-workflow --manifest-version 1.0.9 \
   --host <宿主名> --external-run-id <宿主run ID> --input-ref project:<projectId> --json
 # 每步完成后：
 as sheaf skills report --run-id <runId> --step-id <stepId> --attempt-index 1 \
@@ -189,6 +193,10 @@ as sheaf skills report --run-id <runId> --step-id <stepId> --attempt-index 1 \
 ./scripts/full-journey.sh --recheck-delivery-id <deliveryId>   # 只读重核（不需要 --account）
 ```
 
+全旅程在首个内容写入之前执行所选账号的官方预检，最终 reconcile 仍核验冻结账号，预检不替代最终判定。
+`--prepare-only` 不做官方探测；`--recheck-delivery-id` 仅核对同一投递，不上传/建文/改文/发布，服务端可以记录核验 attempt/审计。
+每次命令 stdout（含失败 JSON）、stderr 和退出码均分别保留为 `.json` / `.err` / `.exit-code`；失败不自动重建文章。
+
 脚本同样幂等：每次运行创建新选题/项目（标题带时间戳）；重复运行不互相干扰。
 退出码语义：0=旅程 synced（完成门全过；`--prepare-only` 的 0 仅表示已 prepare）；
 非零=未达成（含 unknown/failed/缺核验摘要——JSON 与恢复指引保留在 workdir）。
@@ -202,7 +210,8 @@ as sheaf skills report --run-id <runId> --step-id <stepId> --attempt-index 1 \
 | master edit 409 | If-Match 与当前 draftVersion 不匹配 | `as sheaf master get` 取新值重编辑 |
 | variants create 422 | 母稿版本不是 confirmed / 账号未连接平台 | 先 master confirm；wechatoa accounts verify |
 | assets reorder 409 | baseRevision 落后（已有新 revision） | `as sheaf assets set` 响应或重跑取最新 revision |
-| reconcile → unknown | East-West 回执未到/超时 | 安全降级：稍后重跑 reconcile；勿盲目再次建稿 |
+| reconcile → unknown | 核验依赖/微信超时、限流或出口白名单等暂不可用 | 恢复原因后以新键重核同一投递；勿盲目再次建稿 |
+| target_account_not_accessible | 冻结公众号不可访问；文章可能已落库 | 整体投递仍未成功；accounts verify 同一账号，修复后重核，不重复 import |
 | prepare 200（非 201） | 同业务唯一键返回原意图 | 正常幂等语义，用返回的意图继续 |
 | 正文 SHA 校验失败 | 冻结后正文被改动/取回不一致 | 零写退出是保护：新建变体版本重新走链，不改冻结材料 |
 | 同路径不同字节拒绝 | 两张图同名但内容不同（文件名碰撞） | 改名其一后重传，再走资产挂载与 prepare |

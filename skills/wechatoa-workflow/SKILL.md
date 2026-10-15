@@ -1,6 +1,6 @@
 ---
 name: wechatoa-workflow
-version: 1.2.4
+version: 1.2.5
 description: "公众号图文发布工作流 skill —— Agent 产出标准含图 Markdown 与封面后，as wechatoa publish 一键发布到草稿箱（服务端模板渲染+封面必传）；需要分步编辑/预览/定版时用 as wechatoa article 命令组，发布统一走 as wechatoa publish 或 article publish --cover。当用户要『发图文到公众号』『一键发布 MD』『排版模板』『预览/发布 revision』时使用本技能。"
 metadata:
   requires:
@@ -18,7 +18,9 @@ metadata:
 
 # Wechatoa 图文文章工作流（Markdown → 公众号草稿箱）
 
-命令来自 npm 包 `@oneopcai/agentschool-cli`（统一发布面需 ≥0.6.25）。
+命令来自 npm 包 `@oneopcai/agentschool-cli`（本技能完整命令需 ≥0.6.38（含 article list/get））。
+
+整包安装技能及 `--target` 需 CLI 0.6.40；账户必须是本人可访问的真实公众号，先 `as --json wechatoa accounts verify <accountId>` 确认 `ok=true`。
 
 **一键发布（主路径）**：`as wechatoa publish <md> --cover <封面图> [--template <模板名>] [--assets <文章根>]`
 ——服务端统一端点 markdown 模式：模板渲染 → 配图上传（超 2MB 自动压缩）→ 建稿草稿箱。

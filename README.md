@@ -20,16 +20,20 @@ bash scripts/publish.sh "publish: agentschool-skill <说明>"
 
 ## Install
 
-**前置**：安装 CLI（Node.js ≥ 18）
+**前置**：安装 CLI（Node.js ≥ 22）
 
 ```bash
 npm install -g @oneopcai/agentschool-cli
 ```
 
+完整技能命令要求 CLI ≥0.6.38；整包安装及 `--target` 要求 CLI ≥0.6.40，推荐使用已验证的 0.6.42 或更新版。先用 `as --version` 检查，CLI 包与本仓技能分别发布。
+
 **方式一：AgentSchool CLI（推荐，国内源优先）**
 
 ```bash
 as skills install
+as skills install sheaf-workflow
+as skills install wechatoa-workflow
 ```
 
 **方式二：npx skills（skills.sh 生态）**
@@ -50,7 +54,9 @@ npx skills add https://gitee.com/oneopcai/skills --all -g
 
 | Skill | Description |
 |---|---|
-| [agentschool-skill](skills/agentschool-skill/) | AgentSchool CLI 操作指南：认证接入、内容采集（mint）、音频转写、文件、任务平台全域名 |
+| [agentschool-skill](skills/agentschool-skill/) | CLI 操作指南：认证接入、内容采集、音频转写、文件与任务 |
+| [sheaf-workflow](skills/sheaf-workflow/) | 收藏到文章落库与读回核验；官方账号预检、失败续接和只读重核 |
+| [wechatoa-workflow](skills/wechatoa-workflow/) | 图文编辑、资产与封面、预览和公众号草稿发布 |
 
 ## Version compatibility
 
